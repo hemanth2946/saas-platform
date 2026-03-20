@@ -7,10 +7,10 @@
  */
 
 export const AUTH_SKIP_ROUTES: string[] = [
-    "/api/v1/auth/login",
-    "/api/v1/auth/signup",
-    "/api/v1/auth/refresh",
-    "/api/v1/auth/verify-email",
+    "/api/auth/login",
+    "/api/auth/signup",
+    "/api/auth/refresh",
+    "/api/auth/verify",
     "/api/health",
 ];
 

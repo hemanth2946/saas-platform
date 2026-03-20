@@ -12,29 +12,29 @@ type LoginError = {
     fieldErrors?: Record<string, string[]>;
 };
 
+type LoginResponseData = {
+    user: SessionUser;
+    org: OrgContext;
+    plan: Plan;
+};
+
 type LoginResponse = {
     success: boolean;
     message: string;
-    data: {
-        user: SessionUser;
-        org: OrgContext & { plan: Plan };
-    } | null;
+    data: LoginResponseData | null;
     error?: { code: string; fieldErrors?: Record<string, string[]> };
 };
 
 /**
- * Hook for handling user login
- * Calls POST /api/auth/login, stores auth state in Zustand
- * Redirects to org dashboard on success
+ * Hook for handling user login.
+ * Calls POST /api/auth/login, stores auth state in Zustand,
+ * then redirects to the org's dashboard.
  *
  * @returns { login, isLoading, error, clearError }
  *
  * @example
  * const { login, isLoading, error } = useLogin()
- *
- * const onSubmit = async (data) => {
- *   await login(data)
- * }
+ * const onSubmit = async (data) => { await login(data) }
  */
 export function useLogin() {
     const [isLoading, setIsLoading] = useState(false);
@@ -43,8 +43,8 @@ export function useLogin() {
     const router = useRouter();
 
     /**
-     * Logs in the user with email and password
-     * @param input - Login form data (email, password)
+     * Logs in the user with email and password.
+     * @param input - Validated login form data
      */
     async function login(input: LoginInput) {
         setIsLoading(true);
@@ -57,26 +57,24 @@ export function useLogin() {
                 body: JSON.stringify(input),
             });
 
-            const data: LoginResponse = await res.json();
+            const json: LoginResponse = await res.json();
 
-            if (!data.success || !data.data) {
+            if (!json.success || !json.data) {
                 setError({
-                    message: data.message,
-                    code: data.error?.code,
-                    fieldErrors: data.error?.fieldErrors,
+                    message: json.message,
+                    code: json.error?.code,
+                    fieldErrors: json.error?.fieldErrors,
                 });
                 return;
             }
 
-            // Store auth state in Zustand
-            setAuth(
-                data.data.user,
-                data.data.org,
-                data.data.org.plan
-            );
+            const { user, org, plan } = json.data;
 
-            // Redirect to org dashboard
-            router.push(`/${data.data.org.slug}/dashboard`);
+            // Persist auth state to Zustand (survives page refresh via localStorage)
+            setAuth(user, org, plan);
+
+            // Redirect to org dashboard using org slug
+            router.push(`/${org.slug}/dashboard`);
 
         } catch {
             setError({
@@ -88,9 +86,6 @@ export function useLogin() {
         }
     }
 
-    /**
-     * Clears the current login error
-     */
     function clearError() {
         setError(null);
     }
