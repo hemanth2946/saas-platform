@@ -1128,6 +1128,7 @@ export const UserScalarFieldEnum = {
   verifyTokenExp: 'verifyTokenExp',
   resetToken: 'resetToken',
   resetTokenExp: 'resetTokenExp',
+  lastLogin: 'lastLogin',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
