@@ -1,6 +1,6 @@
 // ============================================
 // ORG TYPES
-// Shape of the current organisation in context
+// Shape of the current organization in context
 // Injected by TenantProvider into every page
 // ============================================
 
