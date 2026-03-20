@@ -35,6 +35,7 @@ export type UserMinAggregateOutputType = {
   verifyTokenExp: Date | null
   resetToken: string | null
   resetTokenExp: Date | null
+  lastLogin: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -51,6 +52,7 @@ export type UserMaxAggregateOutputType = {
   verifyTokenExp: Date | null
   resetToken: string | null
   resetTokenExp: Date | null
+  lastLogin: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -67,6 +69,7 @@ export type UserCountAggregateOutputType = {
   verifyTokenExp: number
   resetToken: number
   resetTokenExp: number
+  lastLogin: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -85,6 +88,7 @@ export type UserMinAggregateInputType = {
   verifyTokenExp?: true
   resetToken?: true
   resetTokenExp?: true
+  lastLogin?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -101,6 +105,7 @@ export type UserMaxAggregateInputType = {
   verifyTokenExp?: true
   resetToken?: true
   resetTokenExp?: true
+  lastLogin?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -117,6 +122,7 @@ export type UserCountAggregateInputType = {
   verifyTokenExp?: true
   resetToken?: true
   resetTokenExp?: true
+  lastLogin?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -206,6 +212,7 @@ export type UserGroupByOutputType = {
   verifyTokenExp: Date | null
   resetToken: string | null
   resetTokenExp: Date | null
+  lastLogin: Date | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -243,6 +250,7 @@ export type UserWhereInput = {
   verifyTokenExp?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   resetToken?: Prisma.StringNullableFilter<"User"> | string | null
   resetTokenExp?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -263,6 +271,7 @@ export type UserOrderByWithRelationInput = {
   verifyTokenExp?: Prisma.SortOrderInput | Prisma.SortOrder
   resetToken?: Prisma.SortOrderInput | Prisma.SortOrder
   resetTokenExp?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -286,6 +295,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   isVerified?: Prisma.BoolFilter<"User"> | boolean
   verifyTokenExp?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   resetTokenExp?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  lastLogin?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -306,6 +316,7 @@ export type UserOrderByWithAggregationInput = {
   verifyTokenExp?: Prisma.SortOrderInput | Prisma.SortOrder
   resetToken?: Prisma.SortOrderInput | Prisma.SortOrder
   resetTokenExp?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLogin?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -328,6 +339,7 @@ export type UserScalarWhereWithAggregatesInput = {
   verifyTokenExp?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   resetToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   resetTokenExp?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  lastLogin?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -344,6 +356,7 @@ export type UserCreateInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -364,6 +377,7 @@ export type UserUncheckedCreateInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -384,6 +398,7 @@ export type UserUpdateInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -404,6 +419,7 @@ export type UserUncheckedUpdateInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -424,6 +440,7 @@ export type UserCreateManyInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -440,6 +457,7 @@ export type UserUpdateManyMutationInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -456,6 +474,7 @@ export type UserUncheckedUpdateManyInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -472,6 +491,7 @@ export type UserCountOrderByAggregateInput = {
   verifyTokenExp?: Prisma.SortOrder
   resetToken?: Prisma.SortOrder
   resetTokenExp?: Prisma.SortOrder
+  lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -488,6 +508,7 @@ export type UserMaxOrderByAggregateInput = {
   verifyTokenExp?: Prisma.SortOrder
   resetToken?: Prisma.SortOrder
   resetTokenExp?: Prisma.SortOrder
+  lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -504,6 +525,7 @@ export type UserMinOrderByAggregateInput = {
   verifyTokenExp?: Prisma.SortOrder
   resetToken?: Prisma.SortOrder
   resetTokenExp?: Prisma.SortOrder
+  lastLogin?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -601,6 +623,7 @@ export type UserCreateWithoutOrgsCreatedInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -620,6 +643,7 @@ export type UserUncheckedCreateWithoutOrgsCreatedInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -655,6 +679,7 @@ export type UserUpdateWithoutOrgsCreatedInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -674,6 +699,7 @@ export type UserUncheckedUpdateWithoutOrgsCreatedInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -693,6 +719,7 @@ export type UserCreateWithoutOrgMembershipsInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -712,6 +739,7 @@ export type UserUncheckedCreateWithoutOrgMembershipsInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -747,6 +775,7 @@ export type UserUpdateWithoutOrgMembershipsInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -766,6 +795,7 @@ export type UserUncheckedUpdateWithoutOrgMembershipsInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -785,6 +815,7 @@ export type UserCreateWithoutInvitesSentInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -804,6 +835,7 @@ export type UserUncheckedCreateWithoutInvitesSentInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -839,6 +871,7 @@ export type UserUpdateWithoutInvitesSentInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -858,6 +891,7 @@ export type UserUncheckedUpdateWithoutInvitesSentInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -877,6 +911,7 @@ export type UserCreateWithoutAuditLogsInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -896,6 +931,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   verifyTokenExp?: Date | string | null
   resetToken?: string | null
   resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -931,6 +967,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -950,6 +987,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1027,6 +1065,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   verifyTokenExp?: boolean
   resetToken?: boolean
   resetTokenExp?: boolean
+  lastLogin?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1048,6 +1087,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   verifyTokenExp?: boolean
   resetToken?: boolean
   resetTokenExp?: boolean
+  lastLogin?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1064,6 +1104,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   verifyTokenExp?: boolean
   resetToken?: boolean
   resetTokenExp?: boolean
+  lastLogin?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1080,12 +1121,13 @@ export type UserSelectScalar = {
   verifyTokenExp?: boolean
   resetToken?: boolean
   resetTokenExp?: boolean
+  lastLogin?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "name" | "avatar" | "isVerified" | "verifyToken" | "verifyTokenExp" | "resetToken" | "resetTokenExp" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "name" | "avatar" | "isVerified" | "verifyToken" | "verifyTokenExp" | "resetToken" | "resetTokenExp" | "lastLogin" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orgMemberships?: boolean | Prisma.User$orgMembershipsArgs<ExtArgs>
   invitesSent?: boolean | Prisma.User$invitesSentArgs<ExtArgs>
@@ -1115,6 +1157,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     verifyTokenExp: Date | null
     resetToken: string | null
     resetTokenExp: Date | null
+    lastLogin: Date | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -1555,6 +1598,7 @@ export interface UserFieldRefs {
   readonly verifyTokenExp: Prisma.FieldRef<"User", 'DateTime'>
   readonly resetToken: Prisma.FieldRef<"User", 'String'>
   readonly resetTokenExp: Prisma.FieldRef<"User", 'DateTime'>
+  readonly lastLogin: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"User", 'DateTime'>
