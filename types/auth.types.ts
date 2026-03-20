@@ -3,8 +3,8 @@
 // Shape of logged-in user stored in Zustand auth store
 // ============================================
 
-import { UserRole } from "./Permission.types";
-import { Plan } from "./Plan.types";
+import { UserRole } from "./permission.types";
+import { Plan } from "./plan.types";
 
 export type SessionUser = {
     id: string;
@@ -27,7 +27,7 @@ export type AuthTokens = {
 export type AuthState = {
     user: SessionUser | null;
     tokens: AuthTokens | null;
-    org: import("./Org.types").OrgContext | null;
+    org: import("./org.types").OrgContext | null;
     plan: Plan | null;
     isAuthenticated: boolean;
 };
