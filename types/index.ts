@@ -4,14 +4,14 @@
 // e.g. import type { Permission, ApiResponse, SessionUser } from "@/types"
 // ============================================
 
-export type { Permission, UserRole } from "./Permission.types";
-export type { Plan, PlanConfig, PlanGateResult, FeatureFlag } from "./Plan.types";
-export type { OrgContext, OrgSettings } from "./Org.types";
+export type { Permission, UserRole } from "./permission.types";
+export type { Plan, PlanConfig, PlanGateResult, FeatureFlag } from "./plan.types";
+export type { OrgContext, OrgSettings } from "./org.types";
 export type {
     ApiResponse,
     ApiErrorResponse,
     ApiResult,
     ApiErrorCode,
     PaginatedResponse,
-} from "./Api.types";
-export type { SessionUser, AuthTokens, AuthState } from "./Auth.types";
+} from "./api.types";
+export type { SessionUser, AuthTokens, AuthState } from "./auth.types";

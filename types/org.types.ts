@@ -4,7 +4,7 @@
 // Injected by TenantProvider into every page
 // ============================================
 
-import type { Plan } from "./Plan.types";
+import type { Plan } from "./plan.types";
 
 export type OrgContext = {
     id: string;
