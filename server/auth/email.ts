@@ -1,14 +1,29 @@
 import { Resend } from "resend";
 
 // ============================================
-// RESEND CLIENT
-// Initialized once — reused across all email sends
+// CONSTANTS
 // ============================================
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM_EMAIL = process.env.FROM_EMAIL ?? "onboarding@resend.dev";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+// ============================================
+// RESEND CLIENT — lazy initialization
+// Not created at import time — only when sending email
+// Safe at Vercel build time — no API key needed during build
+// ============================================
+
+/**
+ * Gets Resend client lazily
+ * Only instantiated when actually sending an email
+ *
+ * @throws {Error} If RESEND_API_KEY is not defined at runtime
+ */
+function getResendClient(): Resend {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) throw new Error("RESEND_API_KEY is not defined in environment");
+    return new Resend(apiKey);
+}
 
 // ============================================
 // EMAIL SENDERS
@@ -21,6 +36,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
  * @param email - Recipient email address
  * @param token - Unique verification token stored in DB
  * @returns Promise resolving when email is sent
+ * @throws {Error} If RESEND_API_KEY is not defined
  * @throws {Error} If Resend API call fails
  *
  * @example
@@ -32,7 +48,7 @@ export async function sendVerificationEmail(
 ): Promise<void> {
     const verifyUrl = `${APP_URL}/verify-email?token=${token}`;
 
-    await resend.emails.send({
+    await getResendClient().emails.send({
         from: FROM_EMAIL,
         to: email,
         subject: "Verify your email address",
@@ -61,6 +77,7 @@ export async function sendVerificationEmail(
  * @param email - Recipient email address
  * @param token - Unique reset token stored in DB
  * @returns Promise resolving when email is sent
+ * @throws {Error} If RESEND_API_KEY is not defined
  * @throws {Error} If Resend API call fails
  *
  * @example
@@ -72,7 +89,7 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
     const resetUrl = `${APP_URL}/reset-password?token=${token}`;
 
-    await resend.emails.send({
+    await getResendClient().emails.send({
         from: FROM_EMAIL,
         to: email,
         subject: "Reset your password",
