@@ -45,6 +45,12 @@ type AuthActions = {
      * @param org - Partial org data to merge
      */
     updateOrg: (org: Partial<OrgContext>) => void;
+
+    /**
+     * Updates just the plan — called after fetching plan config
+     * @param plan - New plan value
+     */
+    setPlan: (plan: Plan) => void;
 };
 
 type AuthStore = AuthState & AuthActions;
@@ -109,6 +115,9 @@ export const useAuthStore = create<AuthStore>()(
                         false,
                         "auth/updateOrg"
                     ),
+
+                setPlan: (plan) =>
+                    set({ plan }, false, "auth/setPlan"),
             }),
             {
                 name: "auth-storage", // localStorage key
