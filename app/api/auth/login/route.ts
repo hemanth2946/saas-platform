@@ -8,17 +8,18 @@ import type { UserRole } from "@/types";
 /**
  * POST /api/auth/login
  * Validates credentials, checks email verification,
- * fetches org membership + permissions, returns auth cookies
+ * fetches org membership + role + permissions + subscription plan,
+ * returns complete auth cookies and correctly typed response.
  *
- * @returns 200 with user + org data and auth cookies set
+ * @returns 200 with user + org + plan data and auth cookies set
  * @returns 400 if validation fails
  * @returns 401 if credentials are invalid
- * @returns 403 if email is not verified
+ * @returns 403 if email not verified or no active org membership
  * @returns 500 on server error
  */
 export async function POST(req: NextRequest) {
     try {
-        // 1. Parse + validate
+        // 1. Parse + validate request body
         const body = await req.json();
         const parsed = loginSchema.safeParse(body);
 
@@ -39,8 +40,10 @@ export async function POST(req: NextRequest) {
 
         const { email, password } = parsed.data;
 
-        // 2. Find user
-        const user = await prisma.user.findUnique({
+        // 2. Find user by email
+        // Use findFirst (not findUnique) so we can filter on deletedAt
+        // without violating Prisma's unique-fields-only constraint on findUnique.
+        const user = await prisma.user.findFirst({
             where: { email, deletedAt: null },
         });
 
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // 5. Fetch active org membership + role + permissions
+        // 5. Fetch active org membership with role, org, and subscription plan
         const membership = await prisma.orgMember.findFirst({
             where: {
                 userId: user.id,
@@ -91,8 +94,16 @@ export async function POST(req: NextRequest) {
                 deletedAt: null,
             },
             include: {
-                org: true,
                 role: true,
+                org: {
+                    include: {
+                        subscription: {
+                            include: {
+                                plan: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -110,17 +121,22 @@ export async function POST(req: NextRequest) {
 
         const permissions = membership.role.permissions as string[];
 
-        // 6. Update last login
+        // 6. Resolve the org's current plan name from subscription
+        // Falls back to "free" if no subscription record exists
+        const planName = membership.org.subscription?.plan.name ?? "free";
+
+        // 7. Update last login timestamp
         await prisma.user.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
         });
 
-        // 7. Generate tokens
+        // 8. Generate JWT tokens
         const accessToken = generateAccessToken({
             userId: user.id,
             email: user.email,
             orgId: membership.org.id,
+            orgSlug: membership.org.slug,
             role: membership.role.name as UserRole,
             permissions,
         });
@@ -130,7 +146,7 @@ export async function POST(req: NextRequest) {
             orgId: membership.org.id,
         });
 
-        // 8. Return response with cookies
+        // 9. Build response — shape must exactly match OrgContext and SessionUser types
         const cookies = buildAuthCookies(accessToken, refreshToken);
         const response = NextResponse.json(
             {
@@ -141,19 +157,24 @@ export async function POST(req: NextRequest) {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        avatar: user.avatar,
-                        role: membership.role.name,
+                        avatar: user.avatar ?? null,
+                        role: membership.role.name as UserRole,
                         permissions,
                         orgId: membership.org.id,
                         isVerified: user.isVerified,
+                        lastLogin: user.lastLogin?.toISOString() ?? null,
                     },
                     org: {
                         id: membership.org.id,
                         name: membership.org.name,
                         slug: membership.org.slug,
-                        logo: membership.org.logo,
-                        plan: "free",
+                        logo: membership.org.logo ?? null,
+                        domain: membership.org.domain ?? null,
+                        timezone: membership.org.timezone,
+                        plan: planName,
+                        createdAt: membership.org.createdAt.toISOString(),
                     },
+                    plan: planName,
                 },
             },
             { status: 200 }

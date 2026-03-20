@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query/queryClient";
 import { HealthPoller } from "@/components/providers/HealthPoller";
+import { OfflineBanner } from "@/components/providers/OfflineBanner";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <QueryProvider>
+          <OfflineBanner />
           <HealthPoller />
           {children}
           <Toaster richColors closeButton />

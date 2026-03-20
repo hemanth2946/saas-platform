@@ -1,24 +1,40 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 import { AUTH_CONSTANTS } from "@/config/auth.constants";
-import { verifyAccessToken } from "@/server/auth/jwt";
 
 /**
- * Next.js proxy (middleware)
- * Runs at the edge before every request
- * Protects all /[orgId]/* routes from unauthenticated access
+ * Minimal JWT payload shape — defined locally to avoid importing
+ * server/auth/jwt which uses jsonwebtoken (Node.js-only, not Edge-safe).
+ */
+type JwtPayload = {
+    userId: string;
+    email: string;
+    orgId: string;
+    orgSlug: string;
+    role: string;
+    permissions: string[];
+};
+
+/**
+ * Next.js 16 Proxy (formerly Middleware)
+ * Runs at the Edge Runtime before every request.
+ * Protects all /[orgId]/* routes from unauthenticated access.
+ *
+ * Uses jose for JWT verification — jose is Edge Runtime compatible.
+ * jsonwebtoken is NOT used here (Node.js-only, incompatible with Edge).
  *
  * Flow:
- * - Public routes (login, signup, verify-email) → always allow
- * - Protected routes → check access_token cookie
+ * - Public routes → always allow
+ * - Protected routes → verify access_token cookie with jose
  * - No token → redirect to /login
- * - Valid token but wrong org → redirect to correct org
+ * - Valid token but wrong org → redirect to correct org dashboard
  * - Valid token + correct org → allow through
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // ── Public routes — always allow ──
+    // ── Public routes → always allow ──────────────────────────────────────
     const publicRoutes = [
         "/login",
         "/signup",
@@ -37,12 +53,11 @@ export function proxy(request: NextRequest) {
 
     if (isPublic) return NextResponse.next();
 
-    // ── Get access token from cookie ──
+    // ── Get access token from cookie ───────────────────────────────────────
     const accessToken = request.cookies.get(
         AUTH_CONSTANTS.COOKIES.ACCESS_TOKEN
     )?.value;
 
-    // No token → redirect to login
     if (!accessToken) {
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("redirect", pathname);
@@ -50,31 +65,33 @@ export function proxy(request: NextRequest) {
     }
 
     try {
-        // Verify token
-        const payload = verifyAccessToken(accessToken);
+        // jose requires the secret as Uint8Array.
+        // TextEncoder().encode() produces UTF-8 bytes — same as jsonwebtoken
+        // uses when signing with a plain string secret. Fully interoperable.
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "");
+        const { payload } = await jwtVerify(accessToken, secret);
+        const jwtPayload = payload as unknown as JwtPayload;
 
-        // Check if accessing correct org
-        // pathname starts with /[orgId]/...
+        // Prevent cross-org access: if URL org doesn't match token org, redirect.
+        // pathname format: /[orgId]/... → split("/")[1] = orgId
         const orgIdFromUrl = pathname.split("/")[1];
 
         if (
             orgIdFromUrl &&
-            orgIdFromUrl !== payload.orgId &&
+            orgIdFromUrl !== jwtPayload.orgSlug &&
             !orgIdFromUrl.startsWith("api")
         ) {
-            // Wrong org — redirect to correct org dashboard
             const correctUrl = new URL(
-                `/${payload.orgId}/dashboard`,
+                `/${jwtPayload.orgSlug}/dashboard`,
                 request.url
             );
             return NextResponse.redirect(correctUrl);
         }
 
-        // All good — allow request through
         return NextResponse.next();
 
     } catch {
-        // Token invalid or expired → redirect to login
+        // Token invalid, expired, or malformed → redirect to login cleanly
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("redirect", pathname);
         return NextResponse.redirect(loginUrl);
