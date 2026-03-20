@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MemberStatus {
+  active
+  suspended
+  pending
+}
+
+enum SubscriptionStatus {
+  active
+  canceled
+  past_due
+  trialing
+  incomplete
+}
+
+enum PlanName {
+  free
+  pro
+  growth
+  enterprise
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  password        String
+  name            String
+  avatar          String?
+  isVerified      Boolean   @default(false)
+  verifyToken     String?   @unique
+  verifyTokenExp  DateTime?
+  resetToken      String?   @unique
+  resetTokenExp   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  orgMemberships  OrgMember[]
+  invitesSent     Invite[]     @relation("InvitedBy")
+  auditLogs       AuditLog[]
+  orgsCreated     Org[]        @relation("CreatedBy")
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Org {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  logo        String?
+  domain      String?
+  timezone    String    @default("UTC")
+  createdById String
+  createdBy   User      @relation("CreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  members      OrgMember[]
+  roles        Role[]
+  subscription Subscription?
+  invites      Invite[]
+  featureFlags FeatureFlag[]
+  auditLogs    AuditLog[]
+
+  @@index([slug])
+  @@index([deletedAt])
+  @@map("orgs")
+}
+
+model OrgMember {
+  id        String       @id @default(cuid())
+  status    MemberStatus @default(pending)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  orgId     String
+  org       Org          @relation(fields: [orgId], references: [id])
+  roleId    String
+  role      Role         @relation(fields: [roleId], references: [id])
+  joinedAt  DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  deletedAt DateTime?
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+  @@index([userId])
+  @@index([deletedAt])
+  @@map("org_members")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  permissions Json     @default("[]")
+  isDefault   Boolean  @default(false)
+  orgId       String
+  org         Org      @relation(fields: [orgId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members OrgMember[]
+  invites Invite[]
+
+  @@unique([orgId, name])
+  @@index([orgId])
+  @@map("roles")
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      PlanName @unique
+  features  Json     @default("{}")
+  limits    Json     @default("{}")
+  quotas    Json     @default("{}")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  status               SubscriptionStatus @default(trialing)
+  orgId                String             @unique
+  org                  Org                @relation(fields: [orgId], references: [id])
+  planId               String
+  plan                 Plan               @relation(fields: [planId], references: [id])
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  trialEndsAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([orgId])
+  @@map("subscriptions")
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  email       String
+  token       String    @unique
+  orgId       String
+  org         Org       @relation(fields: [orgId], references: [id])
+  roleId      String
+  role        Role      @relation(fields: [roleId], references: [id])
+  invitedById String
+  invitedBy   User      @relation("InvitedBy", fields: [invitedById], references: [id])
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([email, orgId])
+  @@index([token])
+  @@index([orgId])
+  @@map("invites")
+}
+
+model FeatureFlag {
+  id             String   @id @default(cuid())
+  key            String
+  enabled        Boolean  @default(false)
+  rolloutPercent Int      @default(0)
+  orgId          String
+  org            Org      @relation(fields: [orgId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([orgId, key])
+  @@index([orgId])
+  @@map("feature_flags")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  resource   String
+  resourceId String
+  metadata   Json     @default("{}")
+  ipAddress  String?
+  orgId      String
+  org        Org      @relation(fields: [orgId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([orgId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
