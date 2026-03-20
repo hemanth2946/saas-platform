@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:structure": "node scripts/generate-structure.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
