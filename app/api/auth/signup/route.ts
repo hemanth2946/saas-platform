@@ -163,6 +163,7 @@ export async function POST(req: NextRequest) {
             userId: result.user.id,
             email: result.user.email,
             orgId: result.org.id,
+            orgSlug: result.org.slug,
             role: "super_admin",
             permissions: [
                 "dashboard.view",
