@@ -36,19 +36,24 @@ export async function checkHealth(): Promise<boolean> {
 
 /**
  * Starts polling the health endpoint at the given interval.
+ * Runs an immediate check on start, then repeats every intervalMs.
  * Updates window.__serverUnreachable on status changes.
  *
  * @param intervalMs - Poll interval in milliseconds (default: 30s)
  * @returns cleanup function to stop polling
  */
 export function startHealthPolling(intervalMs = 30_000): () => void {
-    const timer = setInterval(async () => {
-        const healthy = await checkHealth();
+    function poll() {
+        void checkHealth().then((healthy) => {
+            if (typeof window !== "undefined") {
+                window.__serverUnreachable = !healthy;
+            }
+        });
+    }
 
-        if (typeof window !== "undefined") {
-            window.__serverUnreachable = !healthy;
-        }
-    }, intervalMs);
+    // Run immediately, then on each interval
+    poll();
+    const timer = setInterval(poll, intervalMs);
 
     return () => clearInterval(timer);
 }

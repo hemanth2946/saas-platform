@@ -19,6 +19,7 @@ import logger from "@/lib/api/core/logger";
 const NETWORK_ERROR_CODES = new Set([
     "ERR_NETWORK",
     "ERR_CONNECTION_REFUSED",
+    "ECONNABORTED", // Axios timeout exceeded — retry GET requests once
 ]);
 
 const SAFE_RETRY_METHODS = new Set(["get"]);

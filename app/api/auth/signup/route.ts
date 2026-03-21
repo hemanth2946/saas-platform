@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
                         "dashboard.view",
                         "dashboard.edit",
                         "iam.view",
+                        "iam.manage",
                         "iam.invite",
                         "iam.remove",
                         "iam.role.assign",
@@ -123,6 +124,8 @@ export async function POST(req: NextRequest) {
                         "billing.manage",
                         "settings.view",
                         "settings.edit",
+                        "settings.manage",
+                        "audit.view",
                     ],
                 },
             });
@@ -158,32 +161,21 @@ export async function POST(req: NextRequest) {
         // 8. Send verification email
         await sendVerificationEmail(email, verifyToken);
 
-        // 9. Generate tokens
+        // 9. Issue a pre-org token (no orgId yet — select-org happens after verify-email)
         const accessToken = generateAccessToken({
             userId: result.user.id,
             email: result.user.email,
-            orgId: result.org.id,
-            role: "super_admin",
-            permissions: [
-                "dashboard.view",
-                "dashboard.edit",
-                "iam.view",
-                "iam.invite",
-                "iam.remove",
-                "iam.role.assign",
-                "billing.view",
-                "billing.manage",
-                "settings.view",
-                "settings.edit",
-            ],
+            orgId: "",
+            role: "",
+            permissions: [],
         });
 
         const refreshToken = generateRefreshToken({
             userId: result.user.id,
-            orgId: result.org.id,
+            orgId: "",
         });
 
-        // 10. Build response with cookies
+        // 10. Build response with cookies — return user + orgs[]
         const cookies = buildAuthCookies(accessToken, refreshToken);
         const response = NextResponse.json(
             {
@@ -195,13 +187,16 @@ export async function POST(req: NextRequest) {
                         name: result.user.name,
                         email: result.user.email,
                         isVerified: result.user.isVerified,
-                        role: "super_admin",
+                        lastLogin: null,
                     },
-                    org: {
-                        id: result.org.id,
-                        name: result.org.name,
-                        slug: result.org.slug,
-                    },
+                    orgs: [
+                        {
+                            id: result.org.id,
+                            name: result.org.name,
+                            slug: result.org.slug,
+                            logo: null,
+                        },
+                    ],
                 },
             } satisfies ApiResponse<unknown>,
             { status: 201 }

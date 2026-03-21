@@ -1,11 +1,11 @@
-
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
+import { selectOrgService } from "@/lib/services/auth.service";
 import type { SignupInput } from "@/lib/validations/auth.schema";
-import type { SessionUser, OrgContext, Plan } from "@/types";
+import type { SessionUser, OrgSummary } from "@/types";
 
 type SignupError = {
     message: string;
@@ -13,40 +13,31 @@ type SignupError = {
     fieldErrors?: Record<string, string[]>;
 };
 
-type SignupResponse = {
+type SignupResponseData = {
+    user: SessionUser;
+    orgs: OrgSummary[];
+};
+
+type SignupApiResponse = {
     success: boolean;
     message: string;
-    data: {
-        user: SessionUser;
-        org: OrgContext & { plan: Plan };
-    } | null;
+    data: SignupResponseData | null;
     error?: { code: string; fieldErrors?: Record<string, string[]> };
 };
 
 /**
- * Hook for handling user signup
- * Calls POST /api/auth/signup, stores auth state in Zustand
- * Redirects to verify-email page on success
+ * Hook for handling user signup.
+ * After signup the server always returns exactly 1 org (the new one).
+ * Auto-selects it and redirects to /verify-email.
  *
  * @returns { signup, isLoading, error, clearError }
- *
- * @example
- * const { signup, isLoading, error } = useSignup()
- *
- * const onSubmit = async (data) => {
- *   await signup(data)
- * }
  */
 export function useSignup() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<SignupError | null>(null);
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const setLoginData = useAuthStore((state) => state.setLoginData);
     const router = useRouter();
 
-    /**
-     * Signs up a new user and creates their organisation
-     * @param input - Signup form data (name, email, password, orgName)
-     */
     async function signup(input: SignupInput) {
         setIsLoading(true);
         setError(null);
@@ -58,7 +49,7 @@ export function useSignup() {
                 body: JSON.stringify(input),
             });
 
-            const data: SignupResponse = await res.json();
+            const data: SignupApiResponse = await res.json();
 
             if (!data.success || !data.data) {
                 setError({
@@ -69,14 +60,21 @@ export function useSignup() {
                 return;
             }
 
-            // Store auth state in Zustand
-            setAuth(
-                data.data.user,
-                data.data.org,
-                data.data.org.plan
-            );
+            const { user, orgs } = data.data;
 
-            // Redirect to verify email page
+            // Store user + orgs in Zustand
+            setLoginData(user, orgs);
+
+            // Auto-select the single new org
+            if (orgs.length > 0) {
+                try {
+                    await selectOrgService(orgs[0].id);
+                } catch {
+                    // Non-fatal — user can select on next page
+                }
+            }
+
+            // Redirect to email verification
             router.push("/verify-email");
 
         } catch {
@@ -89,9 +87,6 @@ export function useSignup() {
         }
     }
 
-    /**
-     * Clears the current signup error
-     */
     function clearError() {
         setError(null);
     }

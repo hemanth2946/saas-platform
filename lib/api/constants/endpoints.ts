@@ -9,12 +9,14 @@ const V1 = "/api/v1";
 
 export const ENDPOINTS = {
     AUTH: {
-        login: `${V1}/auth/login`,
-        signup: `${V1}/auth/signup`,
-        logout: `${V1}/auth/logout`,
-        refresh: `${V1}/auth/refresh`,
-        verifyEmail: `${V1}/auth/verify-email`,
-        me: `${V1}/auth/me`,
+        login: `/api/auth/login`,
+        signup: `/api/auth/signup`,
+        logout: `/api/auth/logout`,
+        refresh: `/api/auth/refresh`,
+        verifyEmail: `/api/auth/verify-email`,
+        me: `/api/auth/me`,
+        selectOrg: `/api/auth/select-org`,
+        permissions: `/api/auth/permissions`,
     },
 
     ORG: {

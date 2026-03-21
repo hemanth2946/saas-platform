@@ -15,3 +15,4 @@ export type {
     PaginatedResponse,
 } from "./api.types";
 export type { SessionUser, AuthTokens, AuthState } from "./auth.types";
+export type { OrgSummary } from "./org-summary.types";

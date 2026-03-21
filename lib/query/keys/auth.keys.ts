@@ -10,4 +10,10 @@ export const authKeys = {
 
     /** Key for the /auth/me endpoint. */
     me: () => ["auth", "me"] as const,
+
+    /**
+     * Key for the permissions fetch in [orgId]/layout.tsx.
+     * Scoped by orgId so switching orgs forces a fresh fetch.
+     */
+    permissions: (orgId: string) => ["auth", "permissions", orgId] as const,
 };

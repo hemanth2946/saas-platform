@@ -12,6 +12,7 @@ export type Permission =
     | "dashboard.edit"
     // IAM — user management
     | "iam.view"
+    | "iam.manage"
     | "iam.invite"
     | "iam.remove"
     | "iam.role.assign"
@@ -20,7 +21,10 @@ export type Permission =
     | "billing.manage"
     // Settings
     | "settings.view"
-    | "settings.edit";
+    | "settings.edit"
+    | "settings.manage"
+    // Audit log
+    | "audit.view";
 
 // Role-to-permissions map (reference only — enforced on backend)
 // super_admin → all permissions

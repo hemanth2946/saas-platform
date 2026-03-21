@@ -11,6 +11,7 @@ import { env } from "@/lib/config/env";
 
 export const internalClient = createApiClient({
     baseURL: env.NEXT_PUBLIC_API_BASE_URL || "",
-    timeout: 5_000,
+    // 15s — accommodates Neon serverless cold starts (can take 3–8s on first request)
+    timeout: 15_000,
     enableCircuitBreaker: false,
 });

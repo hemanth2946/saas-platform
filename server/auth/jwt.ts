@@ -10,8 +10,12 @@ import type { UserRole } from "@/types";
 export type JwtPayload = {
     userId: string;
     email: string;
+    /**
+     * Empty string "" means user is authenticated but has not yet selected an org.
+     * Populated after POST /api/auth/select-org issues a new org-scoped token.
+     */
     orgId: string;
-    role: UserRole;
+    role: UserRole | "";
     permissions: string[];
 };
 

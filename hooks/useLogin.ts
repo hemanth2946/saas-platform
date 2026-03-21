@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
+import { selectOrgService } from "@/lib/services/auth.service";
 import type { LoginInput } from "@/lib/validations/auth.schema";
-import type { SessionUser, OrgContext, Plan } from "@/types";
+import type { OrgSummary, SessionUser } from "@/types";
 
 type LoginError = {
     message: string;
@@ -12,40 +13,36 @@ type LoginError = {
     fieldErrors?: Record<string, string[]>;
 };
 
-type LoginResponse = {
+type LoginResponseData = {
+    user: SessionUser;
+    orgs: OrgSummary[];
+};
+
+type LoginApiResponse = {
     success: boolean;
     message: string;
-    data: {
-        user: SessionUser;
-        org: OrgContext & { plan: Plan };
-    } | null;
+    data: LoginResponseData | null;
     error?: { code: string; fieldErrors?: Record<string, string[]> };
 };
 
 /**
- * Hook for handling user login
- * Calls POST /api/auth/login, stores auth state in Zustand
- * Redirects to org dashboard on success
+ * Hook for handling user login.
+ *
+ * Flow:
+ * 1. POST /api/auth/login → { user, orgs[] }
+ * 2. Store in Zustand via setLoginData
+ * 3a. orgs.length === 0 → show error (server handles this but guard here too)
+ * 3b. orgs.length === 1 → auto-call select-org, redirect to /[slug]/dashboard
+ * 3c. orgs.length  > 1 → redirect to /select-org
  *
  * @returns { login, isLoading, error, clearError }
- *
- * @example
- * const { login, isLoading, error } = useLogin()
- *
- * const onSubmit = async (data) => {
- *   await login(data)
- * }
  */
 export function useLogin() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<LoginError | null>(null);
-    const setAuth = useAuthStore((state) => state.setAuth);
+    const setLoginData = useAuthStore((state) => state.setLoginData);
     const router = useRouter();
 
-    /**
-     * Logs in the user with email and password
-     * @param input - Login form data (email, password)
-     */
     async function login(input: LoginInput) {
         setIsLoading(true);
         setError(null);
@@ -57,7 +54,7 @@ export function useLogin() {
                 body: JSON.stringify(input),
             });
 
-            const data: LoginResponse = await res.json();
+            const data: LoginApiResponse = await res.json();
 
             if (!data.success || !data.data) {
                 setError({
@@ -68,15 +65,37 @@ export function useLogin() {
                 return;
             }
 
-            // Store auth state in Zustand
-            setAuth(
-                data.data.user,
-                data.data.org,
-                data.data.org.plan
-            );
+            const { user, orgs } = data.data;
 
-            // Redirect to org dashboard
-            router.push(`/${data.data.org.slug}/dashboard`);
+            // Store user + orgs in Zustand (no org selected yet)
+            setLoginData(user, orgs);
+
+            if (orgs.length === 0) {
+                // Should not happen (server returns 400 for this), but guard defensively
+                setError({
+                    message:
+                        "Your account is not associated with any organization. Contact your admin.",
+                    code: "FORBIDDEN",
+                });
+                return;
+            }
+
+            if (orgs.length === 1) {
+                // Single org — auto-select and redirect straight to dashboard
+                try {
+                    const { slug } = await selectOrgService(orgs[0].id);
+                    router.push(`/${slug}/dashboard`);
+                } catch {
+                    setError({
+                        message: "Failed to load your organisation. Please try again.",
+                        code: "INTERNAL_ERROR",
+                    });
+                }
+                return;
+            }
+
+            // Multiple orgs — let the user choose
+            router.push("/select-org");
 
         } catch {
             setError({
@@ -88,9 +107,6 @@ export function useLogin() {
         }
     }
 
-    /**
-     * Clears the current login error
-     */
     function clearError() {
         setError(null);
     }
