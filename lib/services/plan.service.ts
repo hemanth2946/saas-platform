@@ -15,7 +15,7 @@ import type { PlanConfig } from "@/types/plan.types";
  */
 export async function getPlanConfigService(orgId: string): Promise<PlanConfig> {
     const response = await planApi.getPlanConfig(orgId);
-    useAuthStore.getState().setPlan(response.data.plan);
+    useAuthStore.getState().setPlan(response.data);
     return response.data;
 }
 
