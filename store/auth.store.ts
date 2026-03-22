@@ -4,6 +4,7 @@ import type { SessionUser, OrgContext, OrgSummary } from "@/types";
 import type { Permission, UserRole } from "@/types";
 import type { OrgPlanSummary } from "@/types";
 import { clearPlanFeatures } from "@/store/plan-features.store";
+import { clearFeatureFlags } from "@/store/feature-flags.store";
 
 // ============================================
 // TYPES
@@ -154,8 +155,9 @@ export const useAuthStore = create<AuthStore>()(
                     set({ orgs }, false, "auth/setOrgs"),
 
                 clearOrgSession: () => {
-                    // Clear plan features store alongside auth — prevents stale plan data
+                    // Clear plan features and feature flags alongside auth — prevents stale data
                     clearPlanFeatures();
+                    clearFeatureFlags();
 
                     const { user, orgs, isAuthenticated } = get();
                     set(

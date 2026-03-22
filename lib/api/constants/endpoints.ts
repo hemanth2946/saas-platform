@@ -43,6 +43,11 @@ export const ENDPOINTS = {
         richConfig: (orgId: string): string => `${V1}/plan/${orgId}/config`,
     },
 
+    FLAGS: {
+        /** Feature flags for an org — used by FlagsProvider and flags.service.ts */
+        list: (orgId: string): string => `${V1}/flags/${orgId}`,
+    },
+
     HEALTH: {
         ping: "/api/health",
     },

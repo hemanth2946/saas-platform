@@ -17,6 +17,10 @@ export { usersApi } from "./resources/users.api";
 export { planApi } from "./resources/plan.api";
 export type { UsageData } from "./resources/plan.api";
 
+// ── Services ──────────────────────────────────────────────────────────────────
+export { getPlanConfig } from "./plan.service";
+export { getFeatureFlags } from "./flags.service";
+
 // ── Error handler ─────────────────────────────────────────────────────────────
 export { handleApiError } from "./errorHandler/handler";
 export { showDebouncedError, showImmediateError } from "./errorHandler/debounce";

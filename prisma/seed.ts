@@ -419,6 +419,56 @@ async function main() {
         console.log(`  ✅ ${m.userEmail} → ${m.orgSlug} as ${m.role}`);
     }
 
+    // ── 6. Feature Flags ──────────────────────────────────────────────────
+    // Seed flags for all orgs.
+    // beta-scanner and bulk-actions are ON so you can immediately test
+    // useFeatureFlag() returns enabled: true without any manual DB changes.
+    console.log("\n🚩 Seeding feature flags...");
+
+    const FLAG_SEEDS: Array<{
+        orgSlug:       string;
+        key:           string;
+        enabled:       boolean;
+        rolloutPercent: number;
+    }> = [
+        // Acme Corp (Pro plan) — beta-scanner and bulk-actions ON for testing
+        { orgSlug: "acme", key: "new-dashboard",      enabled: false, rolloutPercent: 0   },
+        { orgSlug: "acme", key: "beta-scanner",       enabled: true,  rolloutPercent: 100 },
+        { orgSlug: "acme", key: "ai-suggestions",     enabled: false, rolloutPercent: 0   },
+        { orgSlug: "acme", key: "advanced-reporting", enabled: false, rolloutPercent: 0   },
+        { orgSlug: "acme", key: "bulk-actions",       enabled: true,  rolloutPercent: 100 },
+
+        // Globex Inc (Growth plan) — same defaults
+        { orgSlug: "globex", key: "new-dashboard",      enabled: false, rolloutPercent: 0   },
+        { orgSlug: "globex", key: "beta-scanner",       enabled: true,  rolloutPercent: 100 },
+        { orgSlug: "globex", key: "ai-suggestions",     enabled: false, rolloutPercent: 0   },
+        { orgSlug: "globex", key: "advanced-reporting", enabled: false, rolloutPercent: 0   },
+        { orgSlug: "globex", key: "bulk-actions",       enabled: true,  rolloutPercent: 100 },
+
+        // Initech (Free plan) — all flags off
+        { orgSlug: "initech", key: "new-dashboard",      enabled: false, rolloutPercent: 0 },
+        { orgSlug: "initech", key: "beta-scanner",       enabled: false, rolloutPercent: 0 },
+        { orgSlug: "initech", key: "ai-suggestions",     enabled: false, rolloutPercent: 0 },
+        { orgSlug: "initech", key: "advanced-reporting", enabled: false, rolloutPercent: 0 },
+        { orgSlug: "initech", key: "bulk-actions",       enabled: false, rolloutPercent: 0 },
+    ];
+
+    for (const flag of FLAG_SEEDS) {
+        const orgId = orgMap[flag.orgSlug];
+        await prisma.featureFlag.upsert({
+            where:  { orgId_key: { orgId, key: flag.key } },
+            update: { enabled: flag.enabled, rolloutPercent: flag.rolloutPercent },
+            create: {
+                orgId,
+                key:           flag.key,
+                enabled:       flag.enabled,
+                rolloutPercent: flag.rolloutPercent,
+            },
+        });
+        const status = flag.enabled ? "✅ ON " : "⭕ OFF";
+        console.log(`  ${status} ${flag.orgSlug}/${flag.key}`);
+    }
+
     // ── Summary ───────────────────────────────────────────────────────────
     console.log(`
 ╔════════════════════════════════════════════╗
@@ -435,6 +485,11 @@ async function main() {
 ║  /acme    → Pro plan                       ║
 ║  /globex  → Growth plan                    ║
 ║  /initech → Free plan                      ║
+╠════════════════════════════════════════════╣
+║  Feature Flags (acme/globex)               ║
+║  beta-scanner    → ON  (rollout: 100%)     ║
+║  bulk-actions    → ON  (rollout: 100%)     ║
+║  all others      → OFF                     ║
 ╚════════════════════════════════════════════╝
 `);
 }

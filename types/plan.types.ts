@@ -166,11 +166,3 @@ export interface PlanFeaturesActions {
 
 export type PlanFeaturesStore = PlanFeaturesState & PlanFeaturesActions;
 
-// ── Feature flag (rollout control — separate from plan billing gating) ─────────
-
-/** Feature flag for rollout control. Separate from plan billing gating. */
-export type FeatureFlag = {
-    key:             string;
-    enabled:         boolean;
-    rolloutPercent?: number;
-};

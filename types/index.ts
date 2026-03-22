@@ -29,9 +29,23 @@ export type {
     PlanFeaturesState,
     PlanFeaturesActions,
     PlanFeaturesStore,
-    // Rollout control
-    FeatureFlag,
 } from "./plan.types";
+
+export type {
+    // Feature flag key union
+    FeatureFlagKey,
+    // Feature flag shapes
+    FeatureFlag,
+    FeatureFlagsMap,
+    // Hook return type
+    FeatureFlagResult,
+    // Store types
+    FeatureFlagsState,
+    FeatureFlagsActions,
+    FeatureFlagsStore,
+    // API response
+    GetFeatureFlagsResponse,
+} from "./feature-flag.types";
 
 // PLAN_TIERS is a const, not a type — must be exported separately (not with export type)
 export { PLAN_TIERS } from "./plan.types";
