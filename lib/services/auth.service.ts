@@ -11,7 +11,6 @@ import { useAuthStore } from "@/store/auth.store";
 import type { LoginInput, SignupInput } from "@/lib/validations/auth.schema";
 import type { SessionUser } from "@/types/auth.types";
 import type { OrgContext } from "@/types/org.types";
-import type { PlanConfig } from "@/types/plan.types";
 import type { Permission, UserRole } from "@/types/permission.types";
 
 /**

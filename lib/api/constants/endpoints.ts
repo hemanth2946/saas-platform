@@ -39,6 +39,8 @@ export const ENDPOINTS = {
     PLAN: {
         config: (orgId: string): string => `${V1}/orgs/${orgId}/plan`,
         usage: (orgId: string): string => `${V1}/orgs/${orgId}/plan/usage`,
+        /** Full plan config endpoint — used by PlanProvider and plan.service.ts */
+        richConfig: (orgId: string): string => `${V1}/plan/${orgId}/config`,
     },
 
     HEALTH: {

@@ -7,8 +7,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { selectOrgService } from "@/lib/services/auth.service";
 import { authKeys } from "@/lib/query/keys/auth.keys";
 import { toast } from "sonner";
-import type { OrgContext } from "@/types";
-import type { PlanConfig } from "@/types";
+import type { OrgContext, OrgPlanSummary } from "@/types";
 
 /**
  * Hook for switching between organisations.
@@ -47,7 +46,7 @@ export function useOrgSwitch() {
 
         // Backup for rollback
         const backupOrg: OrgContext | null = currentOrg;
-        const backupPlan: PlanConfig | null = currentPlan;
+        const backupPlan: OrgPlanSummary | null = currentPlan;
 
         // Clear current org session — permissionsLoaded becomes false
         clearOrgSession();

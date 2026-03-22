@@ -12,7 +12,7 @@ import type { ApiResponse } from "@/types/api.types";
 import type { SessionUser } from "@/types/auth.types";
 import type { OrgContext } from "@/types/org.types";
 import type { OrgSummary } from "@/types/org-summary.types";
-import type { PlanConfig } from "@/types/plan.types";
+import type { OrgPlanSummary } from "@/types/plan.types";
 import type { Permission, UserRole } from "@/types/permission.types";
 import type { LoginInput, SignupInput } from "@/lib/validations/auth.schema";
 
@@ -27,7 +27,7 @@ export type LoginResponseData = {
 
 export type SelectOrgResponseData = {
     org: OrgContext;
-    plan: PlanConfig;
+    plan: OrgPlanSummary;
 };
 
 export type PermissionsResponseData = {

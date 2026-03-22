@@ -2,22 +2,12 @@
  * lib/services/plan.service.ts
  *
  * Business logic for plan entitlements.
- * Calls plan.api.ts and syncs plan state to the Zustand auth store.
+ * In Phase 2B+, full plan config is managed by PlanProvider + plan-features.store.ts.
+ * This service remains for usage data access.
  */
 
 import { planApi } from "@/lib/api/resources/plan.api";
 import type { UsageData } from "@/lib/api/resources/plan.api";
-import { useAuthStore } from "@/store/auth.store";
-import type { PlanConfig } from "@/types/plan.types";
-
-/**
- * Fetches the org's plan configuration and updates the store.
- */
-export async function getPlanConfigService(orgId: string): Promise<PlanConfig> {
-    const response = await planApi.getPlanConfig(orgId);
-    useAuthStore.getState().setPlan(response.data);
-    return response.data;
-}
 
 /**
  * Returns the org's current usage against plan limits.

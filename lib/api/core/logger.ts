@@ -109,20 +109,10 @@ const consoleTransport: LogTransport = {
         const prefix = `[${entry.level}] ${entry.timestamp}`;
         const cid = entry.correlationId ? ` (cid:${entry.correlationId})` : "";
         const msg = `${prefix}${cid} ${entry.message}`;
-        switch (entry.level) {
-            case "ERROR":
-                console.error(msg, entry.data ?? "");
-                break;
-            case "WARN":
-                console.warn(msg, entry.data ?? "");
-                break;
-            case "INFO":
-                console.info(msg, entry.data ?? "");
-                break;
-            case "DEBUG":
-                console.debug(msg, entry.data ?? "");
-                break;
-        }
+        /* eslint-disable no-console */
+        const methods = { ERROR: console.error, WARN: console.warn, INFO: console.info, DEBUG: console.debug } as const;
+        (methods[entry.level] ?? console.log)(msg, entry.data ?? "");
+        /* eslint-enable no-console */
     },
 };
 

@@ -5,8 +5,39 @@
 // ============================================
 
 export type { Permission, UserRole } from "./permission.types";
-export type { Plan, PlanConfig, PlanGateResult, FeatureFlag } from "./plan.types";
+
+export type {
+    // Plan name unions
+    Plan,
+    PlanName,
+    PlanTier,
+    // Feature shapes
+    PlanFeatureFlag,
+    PlanFeatures,
+    PlanEntitlements,
+    PlanLimits,
+    PlanAccessRule,
+    PlanAccess,
+    // Config shapes
+    PlanConfig,
+    OrgPlanSummary,
+    // Plan gating
+    FeaturePath,
+    PlanGateResult,
+    PlanTagVariant,
+    // Store types
+    PlanFeaturesState,
+    PlanFeaturesActions,
+    PlanFeaturesStore,
+    // Rollout control
+    FeatureFlag,
+} from "./plan.types";
+
+// PLAN_TIERS is a const, not a type — must be exported separately (not with export type)
+export { PLAN_TIERS } from "./plan.types";
+
 export type { OrgContext, OrgSettings } from "./org.types";
+
 export type {
     ApiResponse,
     ApiErrorResponse,
@@ -14,5 +45,6 @@ export type {
     ApiErrorCode,
     PaginatedResponse,
 } from "./api.types";
+
 export type { SessionUser, AuthTokens, AuthState } from "./auth.types";
 export type { OrgSummary } from "./org-summary.types";

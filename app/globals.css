@@ -128,3 +128,18 @@
     @apply font-sans;
   }
 }
+
+/* ── PlanTag shine beam animation ──────────────────────────────────────────── */
+
+@keyframes planTagShine {
+  0%   { left: -80%; }
+  100% { left: 130%; }
+}
+
+.animate-plan-shine-pro {
+  animation: planTagShine 2.8s ease-in-out infinite;
+}
+
+.animate-plan-shine-growth {
+  animation: planTagShine 3.2s ease-in-out infinite;
+}

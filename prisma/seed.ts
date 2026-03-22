@@ -89,6 +89,157 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
 };
 
 // ============================================
+// PLAN VALUES — source of truth for seed
+// Must match STATIC_PLAN_CONFIG in config/planConfig.ts exactly.
+// Plan.features stores PlanFeatures JSON.
+// Plan.limits stores { entitlements, limits, access } JSON.
+// ============================================
+
+const PLAN_SEED_DATA = [
+    {
+        name: "free" as const,
+        features: {
+            scanning: {
+                multiScanner:      { enabled: false },
+                scanSchedule:      { enabled: false },
+            },
+            reporting: {
+                evidenceCapturing: { enabled: false },
+            },
+            ai: {
+                chat:              { enabled: false },
+            },
+            audit: {
+                export:            { enabled: false },
+            },
+        },
+        limits: {
+            entitlements: {
+                maxUsers:       2,
+                maxScansPerDay: 5,
+                retentionDays:  7,
+                maxWorkers:     1,
+            },
+            limits: {
+                aiQueriesPerMonth: 0,
+                exportFormats:     ["csv"],
+            },
+            access: {
+                scanners:     { mode: "limited", exclude: [] },
+                integrations: { mode: "limited", exclude: [] },
+            },
+        },
+        quotas: {},
+    },
+    {
+        name: "pro" as const,
+        features: {
+            scanning: {
+                multiScanner:      { enabled: true },
+                scanSchedule:      { enabled: true },
+            },
+            reporting: {
+                evidenceCapturing: { enabled: true },
+            },
+            ai: {
+                chat:              { enabled: true },
+            },
+            audit: {
+                export:            { enabled: true },
+            },
+        },
+        limits: {
+            entitlements: {
+                maxUsers:       10,
+                maxScansPerDay: 50,
+                retentionDays:  30,
+                maxWorkers:     5,
+            },
+            limits: {
+                aiQueriesPerMonth: 100,
+                exportFormats:     ["csv", "pdf"],
+            },
+            access: {
+                scanners:     { mode: "all", exclude: [] },
+                integrations: { mode: "all", exclude: [] },
+            },
+        },
+        quotas: {},
+    },
+    {
+        name: "growth" as const,
+        features: {
+            scanning: {
+                multiScanner:      { enabled: true },
+                scanSchedule:      { enabled: true },
+            },
+            reporting: {
+                evidenceCapturing: { enabled: true },
+            },
+            ai: {
+                chat:              { enabled: true },
+            },
+            audit: {
+                export:            { enabled: true },
+            },
+        },
+        limits: {
+            entitlements: {
+                maxUsers:       null,  // unlimited
+                maxScansPerDay: null,  // unlimited
+                retentionDays:  90,
+                maxWorkers:     20,
+            },
+            limits: {
+                aiQueriesPerMonth: null,  // unlimited
+                exportFormats:     ["csv", "pdf", "json"],
+            },
+            access: {
+                scanners:     { mode: "all", exclude: [] },
+                integrations: { mode: "all", exclude: [] },
+            },
+        },
+        quotas: {},
+    },
+    {
+        // Enterprise — keep for DB schema compat; not used in plan gating
+        name: "enterprise" as const,
+        features: {
+            scanning: {
+                multiScanner:      { enabled: true },
+                scanSchedule:      { enabled: true },
+            },
+            reporting: {
+                evidenceCapturing: { enabled: true },
+            },
+            ai: {
+                chat:              { enabled: true },
+            },
+            audit: {
+                export:            { enabled: true },
+            },
+        },
+        limits: {
+            entitlements: {
+                maxUsers:       null,
+                maxScansPerDay: null,
+                retentionDays:  365,
+                maxWorkers:     100,
+            },
+            limits: {
+                aiQueriesPerMonth: null,
+                exportFormats:     ["csv", "pdf", "json"],
+            },
+            access: {
+                scanners:     { mode: "all", exclude: [] },
+                integrations: { mode: "all", exclude: [] },
+            },
+        },
+        quotas: {},
+    },
+];
+
+// ============================================
 // MAIN
 // ============================================
 
@@ -98,39 +249,21 @@ async function main() {
     // ── 1. Plans ──────────────────────────────────────────────────────────
     console.log("📦 Seeding plans...");
 
-    const plans = [
-        {
-            name: "free" as const,
-            features: { "ai.assistant": false, "audit.log": false, "api.keys": false, "custom.domain": false },
-            limits: { seats: 3, "api.keys": 0 },
-            quotas: { "ai.queries": 0, exports: 5 },
-        },
-        {
-            name: "pro" as const,
-            features: { "ai.assistant": true, "audit.log": true, "api.keys": true, "custom.domain": false },
-            limits: { seats: 10, "api.keys": 5 },
-            quotas: { "ai.queries": 500, exports: 50 },
-        },
-        {
-            name: "growth" as const,
-            features: { "ai.assistant": true, "audit.log": true, "api.keys": true, "custom.domain": true },
-            limits: { seats: 50, "api.keys": 20 },
-            quotas: { "ai.queries": 2000, exports: 200 },
-        },
-        {
-            name: "enterprise" as const,
-            features: { "ai.assistant": true, "audit.log": true, "api.keys": true, "custom.domain": true },
-            limits: { seats: 999, "api.keys": 999 },
-            quotas: { "ai.queries": 999999, exports: 999999 },
-        },
-    ];
-
     const planMap: Record<string, string> = {};
-    for (const plan of plans) {
+    for (const plan of PLAN_SEED_DATA) {
         const created = await prisma.plan.upsert({
             where: { name: plan.name },
-            update: plan,
-            create: plan,
+            update: {
+                features: plan.features,
+                limits:   plan.limits,
+                quotas:   plan.quotas,
+            },
+            create: {
+                name:     plan.name,
+                features: plan.features,
+                limits:   plan.limits,
+                quotas:   plan.quotas,
+            },
         });
         planMap[plan.name] = created.id;
         console.log(`  ✅ Plan: ${plan.name}`);
@@ -141,31 +274,27 @@ async function main() {
 
     const SEED_ORGS = [
         {
-            name: "Acme Corp",
-            slug: "acme",
-            domain: "acme.com",
+            name:     "Acme Corp",
+            slug:     "acme",
+            domain:   "acme.com",
             timezone: "America/New_York",
-            plan: "pro" as const,
+            plan:     "pro" as const,
         },
         {
-            name: "Globex Inc",
-            slug: "globex",
-            domain: "globex.com",
+            name:     "Globex Inc",
+            slug:     "globex",
+            domain:   "globex.com",
             timezone: "America/Los_Angeles",
-            plan: "growth" as const,
+            plan:     "growth" as const,
         },
         {
-            name: "Initech",
-            slug: "initech",
-            domain: null,
+            name:     "Initech",
+            slug:     "initech",
+            domain:   null,
             timezone: "UTC",
-            plan: "free" as const,
+            plan:     "free" as const,
         },
     ];
-
-    // We need a placeholder createdById — will be updated when users are created
-    // First create a system user if needed, or create orgs after users
-    // Strategy: create users first, then orgs, then link them
 
     // ── 3. Users ─────────────────────────────────────────────────────────
     console.log("\n👤 Seeding users...");
@@ -177,15 +306,15 @@ async function main() {
         const user = await prisma.user.upsert({
             where: { email: userData.email },
             update: {
-                name: userData.name,
+                name:       userData.name,
                 isVerified: true,
             },
             create: {
-                name: userData.name,
-                email: userData.email,
-                password: hashedPassword,
+                name:       userData.name,
+                email:      userData.email,
+                password:   hashedPassword,
                 isVerified: true,
-                lastLogin: new Date(),
+                lastLogin:  new Date(),
             },
         });
         userMap[userData.email] = user.id;
@@ -204,15 +333,15 @@ async function main() {
         const org = await prisma.org.upsert({
             where: { slug: orgData.slug },
             update: {
-                name: orgData.name,
-                domain: orgData.domain,
+                name:     orgData.name,
+                domain:   orgData.domain,
                 timezone: orgData.timezone,
             },
             create: {
-                name: orgData.name,
-                slug: orgData.slug,
-                domain: orgData.domain,
-                timezone: orgData.timezone,
+                name:        orgData.name,
+                slug:        orgData.slug,
+                domain:      orgData.domain,
+                timezone:    orgData.timezone,
                 createdById: aliceId,
             },
         });
@@ -224,7 +353,7 @@ async function main() {
             where: { orgId: org.id },
             update: { status: "active" },
             create: {
-                orgId: org.id,
+                orgId:  org.id,
                 planId: planMap[orgData.plan],
                 status: "active",
             },
@@ -242,42 +371,42 @@ async function main() {
      * Initech     → Alice (super_admin), Bob (member)
      */
     const MEMBERSHIPS: Array<{
-        orgSlug: string;
+        orgSlug:   string;
         userEmail: string;
-        role: keyof typeof ROLE_PERMISSIONS;
+        role:      keyof typeof ROLE_PERMISSIONS;
     }> = [
         // Acme Corp
-        { orgSlug: "acme", userEmail: "alice@acme.com",  role: "super_admin" },
-        { orgSlug: "acme", userEmail: "bob@acme.com",    role: "member"      },
-        { orgSlug: "acme", userEmail: "carol@acme.com",  role: "viewer"      },
-        { orgSlug: "acme", userEmail: "dave@multi.com",  role: "admin"       },
+        { orgSlug: "acme",    userEmail: "alice@acme.com",  role: "super_admin" },
+        { orgSlug: "acme",    userEmail: "bob@acme.com",    role: "member"      },
+        { orgSlug: "acme",    userEmail: "carol@acme.com",  role: "viewer"      },
+        { orgSlug: "acme",    userEmail: "dave@multi.com",  role: "admin"       },
         // Globex Inc — Dave belongs here too (multi-org demo)
-        { orgSlug: "globex", userEmail: "dave@multi.com",  role: "admin"     },
-        { orgSlug: "globex", userEmail: "alice@acme.com",  role: "super_admin"},
+        { orgSlug: "globex",  userEmail: "dave@multi.com",  role: "admin"       },
+        { orgSlug: "globex",  userEmail: "alice@acme.com",  role: "super_admin" },
         // Initech
-        { orgSlug: "initech", userEmail: "alice@acme.com", role: "super_admin"},
-        { orgSlug: "initech", userEmail: "bob@acme.com",   role: "member"    },
+        { orgSlug: "initech", userEmail: "alice@acme.com",  role: "super_admin" },
+        { orgSlug: "initech", userEmail: "bob@acme.com",    role: "member"      },
     ];
 
     for (const m of MEMBERSHIPS) {
-        const orgId = orgMap[m.orgSlug];
+        const orgId  = orgMap[m.orgSlug];
         const userId = userMap[m.userEmail];
 
         // Upsert role for this org+name combo
         const role = await prisma.role.upsert({
-            where: { orgId_name: { orgId, name: m.role } },
+            where:  { orgId_name: { orgId, name: m.role } },
             update: { permissions: ROLE_PERMISSIONS[m.role] },
             create: {
-                name: m.role,
+                name:        m.role,
                 orgId,
                 permissions: ROLE_PERMISSIONS[m.role],
-                isDefault: m.role === "member",
+                isDefault:   m.role === "member",
             },
         });
 
         // Upsert org membership
         await prisma.orgMember.upsert({
-            where: { userId_orgId: { userId, orgId } },
+            where:  { userId_orgId: { userId, orgId } },
             update: { roleId: role.id, status: "active" },
             create: {
                 userId,

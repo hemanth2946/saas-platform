@@ -7,7 +7,7 @@ import {
     buildAuthCookies,
 } from "@/server/auth/jwt";
 import { AUTH_CONSTANTS } from "@/config/auth.constants";
-import type { UserRole } from "@/types";
+import type { UserRole, OrgPlanSummary } from "@/types";
 import { z } from "zod";
 
 const selectOrgSchema = z.object({
@@ -114,14 +114,14 @@ export async function POST(req: NextRequest) {
 
         const { org, role } = membership;
 
-        // 4. Build plan config from subscription
+        // 4. Build plan summary from subscription
         const subscription = org.subscription;
         const rawPlan = subscription?.plan;
-        const planConfig = {
-            plan: rawPlan?.name ?? "free",
-            features: (rawPlan?.features as Record<string, boolean>) ?? {},
-            limits: (rawPlan?.limits as Record<string, number>) ?? {},
-            quotas: (rawPlan?.quotas as Record<string, number>) ?? {},
+        const planConfig: OrgPlanSummary = {
+            plan:     (rawPlan?.name ?? "free") as OrgPlanSummary["plan"],
+            features: {},
+            limits:   {},
+            quotas:   {},
         };
 
         // 5. Issue a new org-scoped access token

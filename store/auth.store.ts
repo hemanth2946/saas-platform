@@ -1,23 +1,27 @@
-
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import type { SessionUser, OrgContext, OrgSummary } from "@/types";
 import type { Permission, UserRole } from "@/types";
-import type { PlanConfig } from "@/types";
+import type { OrgPlanSummary } from "@/types";
+import { clearPlanFeatures } from "@/store/plan-features.store";
 
 // ============================================
 // TYPES
 // ============================================
 
 type AuthState = {
-    user: SessionUser | null;
-    org: OrgContext | null;
-    plan: PlanConfig | null;
-    orgs: OrgSummary[];
-    permissions: Permission[];
-    role: UserRole | null;
+    user:              SessionUser | null;
+    org:               OrgContext | null;
+    /**
+     * Lightweight plan summary from select-org.
+     * Full plan config (features, entitlements, limits) lives in plan-features.store.ts.
+     */
+    plan:              OrgPlanSummary | null;
+    orgs:              OrgSummary[];
+    permissions:       Permission[];
+    role:              UserRole | null;
     permissionsLoaded: boolean;
-    isAuthenticated: boolean;
+    isAuthenticated:   boolean;
 };
 
 type AuthActions = {
@@ -29,9 +33,9 @@ type AuthActions = {
 
     /**
      * Called after select-org API succeeds.
-     * Stores the selected org and plan config.
+     * Stores the selected org and lightweight plan summary.
      */
-    setOrgSession: (org: OrgContext, plan: PlanConfig) => void;
+    setOrgSession: (org: OrgContext, plan: OrgPlanSummary) => void;
 
     /**
      * Called after GET /api/auth/permissions succeeds.
@@ -46,7 +50,8 @@ type AuthActions = {
 
     /**
      * Clears org-scoped session: org, plan, permissions, role, permissionsLoaded.
-     * Called before switching orgs so stale data is never shown.
+     * Also clears plan features store so stale plan state is never shown.
+     * Called before switching orgs.
      */
     clearOrgSession: () => void;
 
@@ -66,9 +71,9 @@ type AuthActions = {
     updateOrg: (org: Partial<OrgContext>) => void;
 
     /**
-     * Updates just the plan — called after plan change.
+     * Updates just the plan summary — called after plan change.
      */
-    setPlan: (plan: PlanConfig) => void;
+    setPlan: (plan: OrgPlanSummary) => void;
 };
 
 type AuthStore = AuthState & AuthActions;
@@ -78,14 +83,14 @@ type AuthStore = AuthState & AuthActions;
 // ============================================
 
 const initialState: AuthState = {
-    user: null,
-    org: null,
-    plan: null,
-    orgs: [],
-    permissions: [],
-    role: null,
+    user:              null,
+    org:               null,
+    plan:              null,
+    orgs:              [],
+    permissions:       [],
+    role:              null,
     permissionsLoaded: false,
-    isAuthenticated: false,
+    isAuthenticated:   false,
 };
 
 // ============================================
@@ -114,12 +119,12 @@ export const useAuthStore = create<AuthStore>()(
                         {
                             user,
                             orgs,
-                            org: null,
-                            plan: null,
-                            permissions: [],
-                            role: null,
+                            org:               null,
+                            plan:              null,
+                            permissions:       [],
+                            role:              null,
                             permissionsLoaded: false,
-                            isAuthenticated: true,
+                            isAuthenticated:   true,
                         },
                         false,
                         "auth/setLoginData"
@@ -130,8 +135,8 @@ export const useAuthStore = create<AuthStore>()(
                         {
                             org,
                             plan,
-                            permissions: [],
-                            role: null,
+                            permissions:       [],
+                            role:              null,
                             permissionsLoaded: false,
                         },
                         false,
@@ -149,6 +154,9 @@ export const useAuthStore = create<AuthStore>()(
                     set({ orgs }, false, "auth/setOrgs"),
 
                 clearOrgSession: () => {
+                    // Clear plan features store alongside auth — prevents stale plan data
+                    clearPlanFeatures();
+
                     const { user, orgs, isAuthenticated } = get();
                     set(
                         {
@@ -187,13 +195,26 @@ export const useAuthStore = create<AuthStore>()(
                     set({ plan }, false, "auth/setPlan"),
             }),
             {
-                name: "auth-storage",
+                name:    "auth-storage",
+                version: 1,
+                /**
+                 * v0 → v1: plan field changed from PlanConfig (rich) to OrgPlanSummary (lightweight).
+                 * Old localStorage may contain PlanConfig shape — wipe plan to avoid type mismatch.
+                 */
+                migrate: (persistedState, version) => {
+                    const s = (persistedState ?? {}) as Record<string, unknown>;
+                    if (version === 0) {
+                        // plan shape changed from PlanConfig → OrgPlanSummary; reset to null
+                        s.plan = null;
+                    }
+                    return s as unknown as AuthState;
+                },
                 partialize: (state) => ({
                     // Only persist non-sensitive UI state
-                    user: state.user,
-                    org: state.org,
-                    plan: state.plan,
-                    orgs: state.orgs,
+                    user:            state.user,
+                    org:             state.org,
+                    plan:            state.plan,
+                    orgs:            state.orgs,
                     isAuthenticated: state.isAuthenticated,
                     // permissions, role, permissionsLoaded are NEVER persisted
                 }),
