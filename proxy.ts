@@ -1,79 +1,102 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 import { AUTH_CONSTANTS } from "@/config/auth.constants";
-import { verifyAccessToken } from "@/server/auth/jwt";
 
 /**
- * proxy.ts — Next.js 16 route protection (runs before every request)
- *
- * Priority order:
- * 1. /login  → if authenticated + org set  → redirect to /select-org (client resolves slug)
- * 2. /login  → if authenticated + no org   → redirect to /select-org
- * 3. /select-org → if NOT authenticated    → redirect to /login
- * 4. /select-org → if authenticated + org already set → pass through (client redirects)
- * 5. /[orgId]/* → if NOT authenticated     → redirect to /login
- * 6. /[orgId]/* → if authenticated + no org selected → redirect to /select-org
- * 7. /[orgId]/* → if authenticated + org mismatch   → redirect to /select-org (client resolves)
+ * Minimal JWT payload shape — defined locally to avoid importing
+ * server/auth/jwt which uses jsonwebtoken (Node.js-only, not Edge-safe).
  */
-export function proxy(request: NextRequest) {
+type JwtPayload = {
+    userId: string;
+    email: string;
+    orgId: string;
+    orgSlug: string;
+    role: string;
+    permissions: string[];
+};
+
+/**
+ * Next.js 16 Proxy (formerly Middleware)
+ * Runs at the Edge Runtime before every request.
+ * Protects all /[orgId]/* routes from unauthenticated access.
+ *
+ * Uses jose for JWT verification — jose is Edge Runtime compatible.
+ * jsonwebtoken is NOT used here (Node.js-only, incompatible with Edge).
+ *
+ * Flow:
+ * - Public routes → always allow
+ * - Protected routes → verify access_token cookie with jose
+ * - No token → redirect to /login
+ * - Valid token but wrong org → redirect to correct org dashboard
+ * - Valid token + correct org → allow through
+ */
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // ── Always allow: static assets, API routes, root ──────────────────
-    if (
-        pathname.startsWith("/_next") ||
-        pathname.startsWith("/api/") ||
-        pathname === "/favicon.ico" ||
-        pathname === "/"
-    ) {
-        return NextResponse.next();
-    }
+    // ── Public routes → always allow ──────────────────────────────────────
+    const publicRoutes = [
+        "/login",
+        "/signup",
+        "/verify-email",
+        "/reset-password",
+        "/api/auth/login",
+        "/api/auth/signup",
+        "/api/auth/refresh",
+        "/api/auth/verify",
+        "/api/auth/logout",
+    ];
+
+    const isPublic =
+        publicRoutes.some((route) => pathname.startsWith(route)) ||
+        pathname === "/";
 
     // ── Read + verify JWT ────────────────────────────────────────────────
     const tokenCookie = request.cookies.get(AUTH_CONSTANTS.COOKIES.ACCESS_TOKEN)?.value;
 
-    let isAuthenticated = false;
-    let hasOrgSelected = false;
+    // ── Get access token from cookie ───────────────────────────────────────
+    const accessToken = request.cookies.get(
+        AUTH_CONSTANTS.COOKIES.ACCESS_TOKEN
+    )?.value;
 
-    if (tokenCookie) {
-        try {
-            const payload = verifyAccessToken(tokenCookie);
-            isAuthenticated = true;
-            hasOrgSelected = !!payload.orgId && payload.orgId !== "";
-        } catch {
-            // Token invalid or expired — treat as unauthenticated
-            isAuthenticated = false;
-            hasOrgSelected = false;
-        }
+    if (!accessToken) {
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(loginUrl);
     }
 
-    // ── Rule 1 + 2: /login ───────────────────────────────────────────────
-    if (pathname === "/login") {
-        if (isAuthenticated) {
-            // Authenticated (with or without org) → go to select-org
-            // The select-org page will immediately redirect to dashboard if org is already set
-            return NextResponse.redirect(new URL("/select-org", request.url));
-        }
-        return NextResponse.next();
-    }
+    try {
+        // jose requires the secret as Uint8Array.
+        // TextEncoder().encode() produces UTF-8 bytes — same as jsonwebtoken
+        // uses when signing with a plain string secret. Fully interoperable.
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "");
+        const { payload } = await jwtVerify(accessToken, secret);
+        const jwtPayload = payload as unknown as JwtPayload;
 
-    // ── Rule 3 + 4: /select-org ──────────────────────────────────────────
-    if (pathname === "/select-org") {
-        if (!isAuthenticated) {
-            return NextResponse.redirect(new URL("/login", request.url));
+        // Prevent cross-org access: if URL org doesn't match token org, redirect.
+        // pathname format: /[orgId]/... → split("/")[1] = orgId
+        const orgIdFromUrl = pathname.split("/")[1];
+
+        if (
+            orgIdFromUrl &&
+            orgIdFromUrl !== jwtPayload.orgSlug &&
+            !orgIdFromUrl.startsWith("api")
+        ) {
+            const correctUrl = new URL(
+                `/${jwtPayload.orgSlug}/dashboard`,
+                request.url
+            );
+            return NextResponse.redirect(correctUrl);
         }
         // Authenticated — allow through; page handles "already has org" redirect via Zustand
         return NextResponse.next();
     }
 
-    // ── Public auth pages — always allow ─────────────────────────────────
-    const publicPages = ["/signup", "/verify-email", "/reset-password"];
-    if (publicPages.some((p) => pathname.startsWith(p))) {
         return NextResponse.next();
     }
 
-    // ── Rules 5 + 6 + 7: /[orgId]/* ─────────────────────────────────────
-    // Rule 5: not authenticated → /login
-    if (!isAuthenticated) {
+    } catch {
+        // Token invalid, expired, or malformed → redirect to login cleanly
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("redirect", pathname);
         return NextResponse.redirect(loginUrl);
@@ -92,5 +115,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
+    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -15,7 +15,8 @@ export type JwtPayload = {
      * Populated after POST /api/auth/select-org issues a new org-scoped token.
      */
     orgId: string;
-    role: UserRole | "";
+    orgSlug: string;
+    role: UserRole;
     permissions: string[];
 };
 

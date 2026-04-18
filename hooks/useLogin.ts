@@ -15,10 +15,11 @@ type LoginError = {
 
 type LoginResponseData = {
     user: SessionUser;
-    orgs: OrgSummary[];
+    org: OrgContext;
+    plan: Plan;
 };
 
-type LoginApiResponse = {
+type LoginResponse = {
     success: boolean;
     message: string;
     data: LoginResponseData | null;
@@ -27,15 +28,14 @@ type LoginApiResponse = {
 
 /**
  * Hook for handling user login.
- *
- * Flow:
- * 1. POST /api/auth/login → { user, orgs[] }
- * 2. Store in Zustand via setLoginData
- * 3a. orgs.length === 0 → show error (server handles this but guard here too)
- * 3b. orgs.length === 1 → auto-call select-org, redirect to /[slug]/dashboard
- * 3c. orgs.length  > 1 → redirect to /select-org
+ * Calls POST /api/auth/login, stores auth state in Zustand,
+ * then redirects to the org's dashboard.
  *
  * @returns { login, isLoading, error, clearError }
+ *
+ * @example
+ * const { login, isLoading, error } = useLogin()
+ * const onSubmit = async (data) => { await login(data) }
  */
 export function useLogin() {
     const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +43,10 @@ export function useLogin() {
     const setLoginData = useAuthStore((state) => state.setLoginData);
     const router = useRouter();
 
+    /**
+     * Logs in the user with email and password.
+     * @param input - Validated login form data
+     */
     async function login(input: LoginInput) {
         setIsLoading(true);
         setError(null);
@@ -54,48 +58,24 @@ export function useLogin() {
                 body: JSON.stringify(input),
             });
 
-            const data: LoginApiResponse = await res.json();
+            const json: LoginResponse = await res.json();
 
-            if (!data.success || !data.data) {
+            if (!json.success || !json.data) {
                 setError({
-                    message: data.message,
-                    code: data.error?.code,
-                    fieldErrors: data.error?.fieldErrors,
+                    message: json.message,
+                    code: json.error?.code,
+                    fieldErrors: json.error?.fieldErrors,
                 });
                 return;
             }
 
-            const { user, orgs } = data.data;
+            const { user, org, plan } = json.data;
 
-            // Store user + orgs in Zustand (no org selected yet)
-            setLoginData(user, orgs);
+            // Persist auth state to Zustand (survives page refresh via localStorage)
+            setAuth(user, org, plan);
 
-            if (orgs.length === 0) {
-                // Should not happen (server returns 400 for this), but guard defensively
-                setError({
-                    message:
-                        "Your account is not associated with any organization. Contact your admin.",
-                    code: "FORBIDDEN",
-                });
-                return;
-            }
-
-            if (orgs.length === 1) {
-                // Single org — auto-select and redirect straight to dashboard
-                try {
-                    const { slug } = await selectOrgService(orgs[0].id);
-                    router.push(`/${slug}/dashboard`);
-                } catch {
-                    setError({
-                        message: "Failed to load your organisation. Please try again.",
-                        code: "INTERNAL_ERROR",
-                    });
-                }
-                return;
-            }
-
-            // Multiple orgs — let the user choose
-            router.push("/select-org");
+            // Redirect to org dashboard using org slug
+            router.push(`/${org.slug}/dashboard`);
 
         } catch {
             setError({

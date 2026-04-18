@@ -6,22 +6,19 @@ import { loginSchema } from "@/lib/validations/auth.schema";
 
 /**
  * POST /api/auth/login
+ * Validates credentials, checks email verification,
+ * fetches org membership + role + permissions + subscription plan,
+ * returns complete auth cookies and correctly typed response.
  *
- * Phase 2 behaviour:
- * - Validates credentials + email verification
- * - Fetches ALL active org memberships for the user
- * - Issues a JWT with orgId = "" (no org selected yet)
- * - Returns { user, orgs[] } — org selection happens at /select-org
- *
- * @returns 200 { user: { id, name, email, avatar, isVerified }, orgs: OrgSummary[] }
+ * @returns 200 with user + org + plan data and auth cookies set
  * @returns 400 if validation fails
- * @returns 401 if credentials are invalid or email not verified
- * @returns 400 if user belongs to no active orgs
+ * @returns 401 if credentials are invalid
+ * @returns 403 if email not verified or no active org membership
  * @returns 500 on server error
  */
 export async function POST(req: NextRequest) {
     try {
-        // 1. Parse + validate input
+        // 1. Parse + validate request body
         const body = await req.json();
         const parsed = loginSchema.safeParse(body);
 
@@ -42,8 +39,10 @@ export async function POST(req: NextRequest) {
 
         const { email, password } = parsed.data;
 
-        // 2. Find user
-        const user = await prisma.user.findUnique({
+        // 2. Find user by email
+        // Use findFirst (not findUnique) so we can filter on deletedAt
+        // without violating Prisma's unique-fields-only constraint on findUnique.
+        const user = await prisma.user.findFirst({
             where: { email, deletedAt: null },
         });
 
@@ -86,8 +85,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // 5. Fetch all active org memberships for this user
-        const memberships = await prisma.orgMember.findMany({
+        // 5. Fetch active org membership with role, org, and subscription plan
+        const membership = await prisma.orgMember.findFirst({
             where: {
                 userId: user.id,
                 status: "active",
@@ -95,13 +94,16 @@ export async function POST(req: NextRequest) {
                 org: { deletedAt: null },
             },
             include: {
+                role: true,
                 org: {
                     include: {
-                        subscription: { include: { plan: true } },
-                        _count: { select: { members: { where: { status: "active", deletedAt: null } } } },
+                        subscription: {
+                            include: {
+                                plan: true,
+                            },
+                        },
                     },
                 },
-                role: true,
             },
         });
 
@@ -118,20 +120,26 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // 6. Update last login timestamp
+        const permissions = membership.role.permissions as string[];
+
+        // 6. Resolve the org's current plan name from subscription
+        // Falls back to "free" if no subscription record exists
+        const planName = membership.org.subscription?.plan.name ?? "free";
+
+        // 7. Update last login timestamp
         await prisma.user.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
         });
 
-        // 7. Issue a pre-org token (orgId = "", role = "", no permissions)
-        //    Org scoping happens after /api/auth/select-org
+        // 8. Generate JWT tokens
         const accessToken = generateAccessToken({
             userId: user.id,
             email: user.email,
-            orgId: "",
-            role: "",
-            permissions: [],
+            orgId: membership.org.id,
+            orgSlug: membership.org.slug,
+            role: membership.role.name as UserRole,
+            permissions,
         });
 
         const refreshToken = generateRefreshToken({
@@ -139,18 +147,7 @@ export async function POST(req: NextRequest) {
             orgId: "",
         });
 
-        // 8. Build enriched org summary list for the client
-        const orgs = memberships.map((m) => ({
-            id: m.org.id,
-            name: m.org.name,
-            slug: m.org.slug,
-            logo: m.org.logo ?? null,
-            plan: m.org.subscription?.plan.name ?? "free",
-            role: m.role.name,
-            memberCount: m.org._count.members,
-        }));
-
-        // 9. Return response with auth cookies set
+        // 9. Build response — shape must exactly match OrgContext and SessionUser types
         const cookies = buildAuthCookies(accessToken, refreshToken);
         const response = NextResponse.json(
             {
@@ -162,10 +159,23 @@ export async function POST(req: NextRequest) {
                         name: user.name,
                         email: user.email,
                         avatar: user.avatar ?? null,
+                        role: membership.role.name as UserRole,
+                        permissions,
+                        orgId: membership.org.id,
                         isVerified: user.isVerified,
                         lastLogin: user.lastLogin?.toISOString() ?? null,
                     },
-                    orgs,
+                    org: {
+                        id: membership.org.id,
+                        name: membership.org.name,
+                        slug: membership.org.slug,
+                        logo: membership.org.logo ?? null,
+                        domain: membership.org.domain ?? null,
+                        timezone: membership.org.timezone,
+                        plan: planName,
+                        createdAt: membership.org.createdAt.toISOString(),
+                    },
+                    plan: planName,
                 },
             },
             { status: 200 }

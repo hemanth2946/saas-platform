@@ -165,9 +165,21 @@ export async function POST(req: NextRequest) {
         const accessToken = generateAccessToken({
             userId: result.user.id,
             email: result.user.email,
-            orgId: "",
-            role: "",
-            permissions: [],
+            orgId: result.org.id,
+            orgSlug: result.org.slug,
+            role: "super_admin",
+            permissions: [
+                "dashboard.view",
+                "dashboard.edit",
+                "iam.view",
+                "iam.invite",
+                "iam.remove",
+                "iam.role.assign",
+                "billing.view",
+                "billing.manage",
+                "settings.view",
+                "settings.edit",
+            ],
         });
 
         const refreshToken = generateRefreshToken({

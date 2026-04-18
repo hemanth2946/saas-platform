@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
             userId: user.id,
             email: user.email,
             orgId: membership.org.id,
+            orgSlug: membership.org.slug,
             role: membership.role.name as UserRole,
             permissions,
         });

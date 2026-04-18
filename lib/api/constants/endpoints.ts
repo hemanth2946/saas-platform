@@ -8,47 +8,39 @@
  * orgId travels via x-org-id header (injected by Axios interceptor).
  */
 
-const V1 = "/api/v1";
+const API = "/api";
 
 export const ENDPOINTS = {
     AUTH: {
-        login:       `/api/auth/login`,
-        signup:      `/api/auth/signup`,
-        logout:      `/api/auth/logout`,
-        refresh:     `/api/auth/refresh`,
-        verifyEmail: `/api/auth/verify-email`,
-        me:          `/api/auth/me`,
-        selectOrg:   `/api/auth/select-org`,
-        permissions: `/api/auth/permissions`,
+        login: `${API}/auth/login`,
+        signup: `${API}/auth/signup`,
+        logout: `${API}/auth/logout`,
+        refresh: `${API}/auth/refresh`,
+        verifyEmail: `${API}/auth/verify`,
+        me: `${API}/auth/me`,
     },
 
     ORG: {
-        getOrg:    (orgId: string): string => `${V1}/orgs/${orgId}`,
-        updateOrg: (orgId: string): string => `${V1}/orgs/${orgId}`,
-        deleteOrg: (orgId: string): string => `${V1}/orgs/${orgId}`,
+        getOrg: (orgId: string): string => `${API}/orgs/${orgId}`,
+        updateOrg: (orgId: string): string => `${API}/orgs/${orgId}`,
+        deleteOrg: (orgId: string): string => `${API}/orgs/${orgId}`,
     },
 
-    /** IAM — users and roles (orgId via header) */
-    IAM: {
-        users:       `${V1}/users`,
-        roles:       `${V1}/roles`,
-        invite:      `${V1}/users/invite`,
-        user:        (userId: string): string => `${V1}/users/${userId}`,
-        inviteToken: (token: string): string  => `${V1}/invite/${token}`,
-        acceptInvite:(token: string): string  => `${V1}/invite/${token}/accept`,
+    USERS: {
+        list: (orgId: string): string => `${API}/orgs/${orgId}/users`,
+        invite: (orgId: string): string => `${API}/orgs/${orgId}/users/invite`,
+        remove: (orgId: string, userId: string): string =>
+            `${API}/orgs/${orgId}/users/${userId}`,
+        updateRole: (orgId: string, userId: string): string =>
+            `${API}/orgs/${orgId}/users/${userId}/role`,
+        suspend: (orgId: string, userId: string): string =>
+            `${API}/orgs/${orgId}/users/${userId}/suspend`,
     },
 
     /** Plan config — orgId via x-org-id header */
     PLAN: {
-        /** Full plan config endpoint — used by PlanProvider and plan.service.ts */
-        config: `${V1}/plan/config`,
-        usage:  (orgId: string): string => `${V1}/orgs/${orgId}/plan/usage`,
-    },
-
-    /** Feature flags — orgId via x-org-id header */
-    FLAGS: {
-        /** Feature flags endpoint — used by FlagsProvider and flags.service.ts */
-        list: `${V1}/flags`,
+        config: (orgId: string): string => `${API}/orgs/${orgId}/plan`,
+        usage: (orgId: string): string => `${API}/orgs/${orgId}/plan/usage`,
     },
 
     HEALTH: {

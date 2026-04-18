@@ -2,6 +2,7 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
+import bcrypt from "bcryptjs";
 
 const adapter = new PrismaNeon({
     connectionString: process.env.DATABASE_URL!,
@@ -22,163 +23,44 @@ async function hash(password: string) {
 // ============================================
 
 /**
- * Demo users — each user belongs to one or more orgs.
- * All passwords are: Password123!
+ * Seeds the database with initial data for development and Vercel testing.
+ * Run with: npm run db:seed
+ *
+ * Seeds (all idempotent via upsert):
+ * - 4 plans (free, pro, growth, enterprise)
+ * - 1 org: Acme Inc (slug: "acme")
+ * - 2 roles: admin (full permissions), viewer (dashboard.view only)
+ * - 1 admin user:  admin@acme.com  / Admin1234!
+ * - 1 viewer user: viewer@acme.com / Viewer1234!
+ * - 2 org memberships (active)
+ * - 1 Pro subscription for the org
  */
-const SEED_USERS = [
-    {
-        name:  "Alice Admin",
-        email: "alice@acme.com",
-        role:  "super_admin",
-    },
-    {
-        name:  "Bob Member",
-        email: "bob@acme.com",
-        role:  "member",
-    },
-    {
-        name:  "Carol Viewer",
-        email: "carol@acme.com",
-        role:  "viewer",
-    },
-    {
-        // Multi-org user — belongs to both Acme and Globex
-        name:  "Dave Multi",
-        email: "dave@multi.com",
-        role:  "admin",
-    },
-] as const;
+async function main() {
+    console.log("🌱 Seeding database...");
 
-// ── Quick Role permissions ─────────────────────────────────────────────────────
-
-const QUICK_ROLE_PERMISSIONS: Record<string, string[]> = {
-    super_admin: [
-        "dashboard.view", "dashboard.edit",
-        "iam.view", "iam.manage", "iam.invite", "iam.remove", "iam.role.assign",
-        "billing.view", "billing.manage",
-        "settings.view", "settings.edit", "settings.manage",
-        "audit.view",
-        "scan.view", "scan.create",
-    ],
-    admin: [
-        "dashboard.view", "dashboard.edit",
-        "iam.view", "iam.manage", "iam.invite", "iam.remove", "iam.role.assign",
-        "billing.view",
-        "settings.view", "settings.edit", "settings.manage",
-        "audit.view",
-        "scan.view", "scan.create",
-    ],
-    member: [
-        "dashboard.view",
-        "scan.view", "scan.create",
-    ],
-    viewer: [
-        "dashboard.view",
-        "scan.view",
-    ],
-};
-
-// ── Service-based role definitions ────────────────────────────────────────────
-
-interface ServiceRoleDef {
-    name:        string;
-    serviceKey:  string;
-    description: string;
-    permissions: string[];
-}
-
-const SERVICE_ROLES: ServiceRoleDef[] = [
-    // Risk Overview
-    {
-        name:        "Risk Overview - View",
-        serviceKey:  "risk-overview",
-        description: "View risk overview dashboard",
-        permissions: ["dashboard.view"],
-    },
-    {
-        name:        "Risk Overview - Export",
-        serviceKey:  "risk-overview",
-        description: "View and export risk overview data",
-        permissions: ["dashboard.view", "audit.view"],
-    },
-    // Network Perimeter
-    {
-        name:        "Network Perimeter - View",
-        serviceKey:  "network-perimeter",
-        description: "View network perimeter scans",
-        permissions: ["scan.view"],
-    },
-    {
-        name:        "Network Perimeter - Manage",
-        serviceKey:  "network-perimeter",
-        description: "View and manage network perimeter scans",
-        permissions: ["scan.view", "scan.create"],
-    },
-    // Cloud Workload
-    {
-        name:        "Cloud Workload - View",
-        serviceKey:  "cloud-workload",
-        description: "View cloud workload scans",
-        permissions: ["scan.view"],
-    },
-    {
-        name:        "Cloud Workload - Manage",
-        serviceKey:  "cloud-workload",
-        description: "View and manage cloud workload scans",
-        permissions: ["scan.view", "scan.create"],
-    },
-    // Code Security
-    {
-        name:        "Code Security - View",
-        serviceKey:  "code-security",
-        description: "View code security scans",
-        permissions: ["scan.view"],
-    },
-    {
-        name:        "Code Security - Manage",
-        serviceKey:  "code-security",
-        description: "View and manage code security scans",
-        permissions: ["scan.view", "scan.create"],
-    },
-    // Cloud Security Posture
-    {
-        name:        "Cloud Security Posture - View",
-        serviceKey:  "cloud-security-posture",
-        description: "View cloud security posture",
-        permissions: ["scan.view"],
-    },
-    {
-        name:        "Cloud Security Posture - Export",
-        serviceKey:  "cloud-security-posture",
-        description: "View and export cloud security posture data",
-        permissions: ["scan.view", "audit.view"],
-    },
-    {
-        name:        "Cloud Security Posture - Manage",
-        serviceKey:  "cloud-security-posture",
-        description: "View, export, and manage cloud security posture",
-        permissions: ["scan.view", "scan.create", "audit.view"],
-    },
-];
-
-// ── Plan values ──────────────────────────────────────────────────────────────
-
-const PLAN_SEED_DATA = [
-    {
-        name: "free" as const,
-        features: {
-            scanning:  { multiScanner: { enabled: false }, scanSchedule: { enabled: false } },
-            reporting: { evidenceCapturing: { enabled: false } },
-            ai:        { chat: { enabled: false } },
-            audit:     { export: { enabled: false } },
-        },
-        limits: {
-            entitlements: { maxUsers: 2, maxScansPerDay: 5, retentionDays: 7, maxWorkers: 1 },
-            limits:       { aiQueriesPerMonth: 0, exportFormats: ["csv"] },
-            access:       {
-                scanners:     { mode: "limited", exclude: [] },
-                integrations: { mode: "limited", exclude: [] },
+    // ── Plans ──────────────────────────────────────────────────────────────
+    const planData = [
+        {
+            name: "free" as const,
+            features: {
+                "ai.assistant": false,
+                "audit.log": false,
+                "api.keys": false,
+                "custom.domain": false,
             },
+            limits: { seats: 3, "api.keys": 0 },
+            quotas: { "ai.queries": 0, exports: 5 },
+        },
+        {
+            name: "pro" as const,
+            features: {
+                "ai.assistant": true,
+                "audit.log": true,
+                "api.keys": true,
+                "custom.domain": false,
+            },
+            limits: { seats: 10, "api.keys": 5 },
+            quotas: { "ai.queries": 500, exports: 50 },
         },
         quotas: {},
     },
@@ -197,42 +79,8 @@ const PLAN_SEED_DATA = [
                 scanners:     { mode: "all", exclude: [] },
                 integrations: { mode: "all", exclude: [] },
             },
-        },
-        quotas: {},
-    },
-    {
-        name: "growth" as const,
-        features: {
-            scanning:  { multiScanner: { enabled: true }, scanSchedule: { enabled: true } },
-            reporting: { evidenceCapturing: { enabled: true } },
-            ai:        { chat: { enabled: true } },
-            audit:     { export: { enabled: true } },
-        },
-        limits: {
-            entitlements: { maxUsers: null, maxScansPerDay: null, retentionDays: 90, maxWorkers: 20 },
-            limits:       { aiQueriesPerMonth: null, exportFormats: ["csv", "pdf", "json"] },
-            access:       {
-                scanners:     { mode: "all", exclude: [] },
-                integrations: { mode: "all", exclude: [] },
-            },
-        },
-        quotas: {},
-    },
-    {
-        name: "enterprise" as const,
-        features: {
-            scanning:  { multiScanner: { enabled: true }, scanSchedule: { enabled: true } },
-            reporting: { evidenceCapturing: { enabled: true } },
-            ai:        { chat: { enabled: true } },
-            audit:     { export: { enabled: true } },
-        },
-        limits: {
-            entitlements: { maxUsers: null, maxScansPerDay: null, retentionDays: 365, maxWorkers: 100 },
-            limits:       { aiQueriesPerMonth: null, exportFormats: ["csv", "pdf", "json"] },
-            access:       {
-                scanners:     { mode: "all", exclude: [] },
-                integrations: { mode: "all", exclude: [] },
-            },
+            limits: { seats: 50, "api.keys": 20 },
+            quotas: { "ai.queries": 2000, exports: 200 },
         },
         quotas: {},
     },
@@ -285,218 +133,160 @@ async function main() {
                 isVerified: true,
                 lastLogin:  new Date(),
             },
-        });
-        userMap[userData.email] = user.id;
-        console.log(`  ✅ User: ${userData.name} <${userData.email}>`);
-    }
-
-    // Alice is the creator for all orgs
-    const aliceId = userMap["alice@acme.com"]!;
-
-    // ── 4. Create Orgs ────────────────────────────────────────────────────
-    console.log("\n🏢 Creating orgs...");
-
-    const orgMap: Record<string, string> = {};
-
-    for (const orgData of SEED_ORGS) {
-        const org = await prisma.org.upsert({
-            where:  { slug: orgData.slug },
-            update: { name: orgData.name, domain: orgData.domain, timezone: orgData.timezone },
-            create: {
-                name:        orgData.name,
-                slug:        orgData.slug,
-                domain:      orgData.domain,
-                timezone:    orgData.timezone,
-                createdById: aliceId,
-            },
-        });
-        orgMap[orgData.slug] = org.id;
-        console.log(`  ✅ Org: ${orgData.name} (/${orgData.slug})`);
-
-        await prisma.subscription.upsert({
-            where:  { orgId: org.id },
-            update: { status: "active" },
-            create: { orgId: org.id, planId: planMap[orgData.plan]!, status: "active" },
-        });
-        console.log(`     💳 Subscription: ${orgData.plan}`);
-    }
-
-    // ── 5. Quick Roles + Memberships ──────────────────────────────────────
-    console.log("\n🔐 Seeding quick roles and memberships...");
-
-    /**
-     * Membership map:
-     * Acme Corp   → Alice (super_admin), Bob (member), Carol (viewer), Dave (admin)
-     * Globex Inc  → Dave (admin), Alice (super_admin)
-     * Initech     → Alice (super_admin), Bob (member)
-     */
-    const MEMBERSHIPS: Array<{
-        orgSlug:   string;
-        userEmail: string;
-        role:      keyof typeof QUICK_ROLE_PERMISSIONS;
-    }> = [
-        { orgSlug: "acme",    userEmail: "alice@acme.com",  role: "super_admin" },
-        { orgSlug: "acme",    userEmail: "bob@acme.com",    role: "member"      },
-        { orgSlug: "acme",    userEmail: "carol@acme.com",  role: "viewer"      },
-        { orgSlug: "acme",    userEmail: "dave@multi.com",  role: "admin"       },
-        { orgSlug: "globex",  userEmail: "dave@multi.com",  role: "admin"       },
-        { orgSlug: "globex",  userEmail: "alice@acme.com",  role: "super_admin" },
-        { orgSlug: "initech", userEmail: "alice@acme.com",  role: "super_admin" },
-        { orgSlug: "initech", userEmail: "bob@acme.com",    role: "member"      },
+            limits: { seats: 999, "api.keys": 999 },
+            quotas: { "ai.queries": 999999, exports: 999999 },
+        },
     ];
 
-    // Track created quick roles: orgSlug+roleName → roleId
-    const quickRoleMap: Record<string, string> = {};
-
-    for (const m of MEMBERSHIPS) {
-        const orgId  = orgMap[m.orgSlug]!;
-        const userId = userMap[m.userEmail]!;
-
-        // Upsert Quick Role
-        const role = await prisma.role.upsert({
-            where:  { orgId_name: { orgId, name: m.role } },
-            update: { permissions: QUICK_ROLE_PERMISSIONS[m.role], type: "QUICK" },
-            create: {
-                name:        m.role,
-                orgId,
-                permissions: QUICK_ROLE_PERMISSIONS[m.role],
-                isDefault:   m.role === "member",
-                type:        "QUICK",
-            },
+    const plans: Record<string, { id: string }> = {};
+    for (const plan of planData) {
+        const p = await prisma.plan.upsert({
+            where: { name: plan.name },
+            update: plan,
+            create: plan,
         });
-        quickRoleMap[`${m.orgSlug}:${m.role}`] = role.id;
-
-        // Upsert OrgMember (for status tracking)
-        await prisma.orgMember.upsert({
-            where:  { userId_orgId: { userId, orgId } },
-            update: { roleId: role.id, status: "active" },
-            create: { userId, orgId, roleId: role.id, status: "active" },
-        });
-
-        // Upsert UserRole (many-to-many)
-        await prisma.userRole.upsert({
-            where:  { userId_roleId: { userId, roleId: role.id } },
-            update: {},
-            create: { userId, roleId: role.id },
-        });
-
-        console.log(`  ✅ ${m.userEmail} → ${m.orgSlug} as ${m.role}`);
+        plans[plan.name] = p;
+        console.log(`  ✅ Plan: ${plan.name}`);
     }
 
-    // ── 6. Service-Based Roles (for each org) ────────────────────────────
-    console.log("\n🔧 Seeding service-based roles...");
+    // ── Org ────────────────────────────────────────────────────────────────
+    // We need a placeholder createdById — create admin user first, then link.
+    // Use a two-pass approach inside a transaction to avoid circular dependency.
 
-    // Track service roles: orgSlug+roleName → roleId
-    const serviceRoleMap: Record<string, string> = {};
+    const adminPassword = await bcrypt.hash("Admin1234!", 12);
+    const viewerPassword = await bcrypt.hash("Viewer1234!", 12);
 
-    for (const orgSlug of ["acme", "globex", "initech"]) {
-        const orgId = orgMap[orgSlug]!;
+    // Upsert admin user (isVerified: true so they can log in immediately)
+    const adminUser = await prisma.user.upsert({
+        where: { email: "admin@acme.com" },
+        update: {
+            name: "Acme Admin",
+            password: adminPassword,
+            isVerified: true,
+        },
+        create: {
+            name: "Acme Admin",
+            email: "admin@acme.com",
+            password: adminPassword,
+            isVerified: true,
+        },
+    });
+    console.log(`  ✅ User: admin@acme.com`);
 
-        for (const srDef of SERVICE_ROLES) {
-            const role = await prisma.role.upsert({
-                where:  { orgId_name: { orgId, name: srDef.name } },
-                update: {
-                    permissions: srDef.permissions,
-                    type:        "SERVICE_BASED",
-                    serviceKey:  srDef.serviceKey,
-                    description: srDef.description,
-                },
-                create: {
-                    name:        srDef.name,
-                    orgId,
-                    permissions: srDef.permissions,
-                    type:        "SERVICE_BASED",
-                    serviceKey:  srDef.serviceKey,
-                    description: srDef.description,
-                },
-            });
-            serviceRoleMap[`${orgSlug}:${srDef.name}`] = role.id;
-        }
-        console.log(`  ✅ Service roles for ${orgSlug}`);
-    }
+    // Upsert viewer user
+    const viewerUser = await prisma.user.upsert({
+        where: { email: "viewer@acme.com" },
+        update: {
+            name: "Acme Viewer",
+            password: viewerPassword,
+            isVerified: true,
+        },
+        create: {
+            name: "Acme Viewer",
+            email: "viewer@acme.com",
+            password: viewerPassword,
+            isVerified: true,
+        },
+    });
+    console.log(`  ✅ User: viewer@acme.com`);
 
-    // ── 7. Extra UserRole assignments (multi-role demo) ──────────────────
-    console.log("\n👥 Adding extra UserRole assignments...");
+    // Upsert org (slug must be unique)
+    const org = await prisma.org.upsert({
+        where: { slug: "acme" },
+        update: { name: "Acme Inc", timezone: "UTC" },
+        create: {
+            name: "Acme Inc",
+            slug: "acme",
+            timezone: "UTC",
+            createdById: adminUser.id,
+        },
+    });
+    console.log(`  ✅ Org: ${org.name} (slug: ${org.slug})`);
 
-    // Carol (viewer in acme) also gets Risk Overview - View service role
-    const carolId          = userMap["carol@acme.com"]!;
-    const acmeRiskViewRole = serviceRoleMap["acme:Risk Overview - View"];
-
-    if (carolId && acmeRiskViewRole) {
-        await prisma.userRole.upsert({
-            where:  { userId_roleId: { userId: carolId, roleId: acmeRiskViewRole } },
-            update: {},
-            create: { userId: carolId, roleId: acmeRiskViewRole },
-        });
-        console.log("  ✅ carol@acme.com → Risk Overview - View (multi-role demo)");
-    }
-
-    // ── 8. Feature Flags ──────────────────────────────────────────────────
-    console.log("\n🚩 Seeding feature flags...");
-
-    const FLAG_SEEDS: Array<{
-        orgSlug:        string;
-        key:            string;
-        enabled:        boolean;
-        rolloutPercent: number;
-    }> = [
-        { orgSlug: "acme", key: "new-dashboard",      enabled: false, rolloutPercent: 0   },
-        { orgSlug: "acme", key: "beta-scanner",       enabled: true,  rolloutPercent: 100 },
-        { orgSlug: "acme", key: "ai-suggestions",     enabled: false, rolloutPercent: 0   },
-        { orgSlug: "acme", key: "advanced-reporting", enabled: false, rolloutPercent: 0   },
-        { orgSlug: "acme", key: "bulk-actions",       enabled: true,  rolloutPercent: 100 },
-
-        { orgSlug: "globex", key: "new-dashboard",      enabled: false, rolloutPercent: 0   },
-        { orgSlug: "globex", key: "beta-scanner",       enabled: true,  rolloutPercent: 100 },
-        { orgSlug: "globex", key: "ai-suggestions",     enabled: false, rolloutPercent: 0   },
-        { orgSlug: "globex", key: "advanced-reporting", enabled: false, rolloutPercent: 0   },
-        { orgSlug: "globex", key: "bulk-actions",       enabled: true,  rolloutPercent: 100 },
-
-        { orgSlug: "initech", key: "new-dashboard",      enabled: false, rolloutPercent: 0 },
-        { orgSlug: "initech", key: "beta-scanner",       enabled: false, rolloutPercent: 0 },
-        { orgSlug: "initech", key: "ai-suggestions",     enabled: false, rolloutPercent: 0 },
-        { orgSlug: "initech", key: "advanced-reporting", enabled: false, rolloutPercent: 0 },
-        { orgSlug: "initech", key: "bulk-actions",       enabled: false, rolloutPercent: 0 },
+    // ── Roles ──────────────────────────────────────────────────────────────
+    const adminPermissions = [
+        "dashboard.view",
+        "dashboard.edit",
+        "iam.view",
+        "iam.invite",
+        "iam.remove",
+        "iam.role.assign",
+        "billing.view",
+        "billing.manage",
+        "settings.view",
+        "settings.edit",
     ];
 
-    for (const flag of FLAG_SEEDS) {
-        const orgId = orgMap[flag.orgSlug]!;
-        await prisma.featureFlag.upsert({
-            where:  { orgId_key: { orgId, key: flag.key } },
-            update: { enabled: flag.enabled, rolloutPercent: flag.rolloutPercent },
-            create: { orgId, key: flag.key, enabled: flag.enabled, rolloutPercent: flag.rolloutPercent },
-        });
-        const status = flag.enabled ? "✅ ON " : "⭕ OFF";
-        console.log(`  ${status} ${flag.orgSlug}/${flag.key}`);
-    }
+    const viewerPermissions = ["dashboard.view"];
 
-    // ── Summary ───────────────────────────────────────────────────────────
-    console.log(`
-╔══════════════════════════════════════════════════════════╗
-║                  🌱 Seed complete!                       ║
-╠══════════════════════════════════════════════════════════╣
-║  All passwords: Password123!                             ║
-╠══════════════════════════════════════════════════════════╣
-║  alice@acme.com   → acme, globex, initech (super_admin) ║
-║  bob@acme.com     → acme, initech (member)              ║
-║  carol@acme.com   → acme (viewer + risk-overview view)  ║
-║  dave@multi.com   → acme, globex (admin)                ║
-╠══════════════════════════════════════════════════════════╣
-║  Quick roles: super_admin, admin, member, viewer         ║
-║  Service roles: 11 roles across 5 services               ║
-║  UserRole table: populated for all memberships           ║
-╠══════════════════════════════════════════════════════════╣
-║  Orgs                                                    ║
-║  /acme    → Pro plan                                     ║
-║  /globex  → Growth plan                                  ║
-║  /initech → Free plan                                    ║
-╠══════════════════════════════════════════════════════════╣
-║  Feature Flags (acme/globex)                             ║
-║  beta-scanner  → ON  (rollout: 100%)                    ║
-║  bulk-actions  → ON  (rollout: 100%)                    ║
-║  all others    → OFF                                     ║
-╚══════════════════════════════════════════════════════════╝
-`);
+    const adminRole = await prisma.role.upsert({
+        where: { orgId_name: { orgId: org.id, name: "admin" } },
+        update: { permissions: adminPermissions },
+        create: {
+            name: "admin",
+            orgId: org.id,
+            permissions: adminPermissions,
+            isDefault: false,
+        },
+    });
+    console.log(`  ✅ Role: admin`);
+
+    const viewerRole = await prisma.role.upsert({
+        where: { orgId_name: { orgId: org.id, name: "viewer" } },
+        update: { permissions: viewerPermissions },
+        create: {
+            name: "viewer",
+            orgId: org.id,
+            permissions: viewerPermissions,
+            isDefault: true,
+        },
+    });
+    console.log(`  ✅ Role: viewer`);
+
+    // ── Memberships ────────────────────────────────────────────────────────
+    await prisma.orgMember.upsert({
+        where: { userId_orgId: { userId: adminUser.id, orgId: org.id } },
+        update: { status: "active", roleId: adminRole.id },
+        create: {
+            userId: adminUser.id,
+            orgId: org.id,
+            roleId: adminRole.id,
+            status: "active",
+        },
+    });
+    console.log(`  ✅ Membership: admin@acme.com → admin role`);
+
+    await prisma.orgMember.upsert({
+        where: { userId_orgId: { userId: viewerUser.id, orgId: org.id } },
+        update: { status: "active", roleId: viewerRole.id },
+        create: {
+            userId: viewerUser.id,
+            orgId: org.id,
+            roleId: viewerRole.id,
+            status: "active",
+        },
+    });
+    console.log(`  ✅ Membership: viewer@acme.com → viewer role`);
+
+    // ── Subscription ───────────────────────────────────────────────────────
+    // Org is on Pro plan
+    await prisma.subscription.upsert({
+        where: { orgId: org.id },
+        update: { planId: plans["pro"].id, status: "active" },
+        create: {
+            orgId: org.id,
+            planId: plans["pro"].id,
+            status: "active",
+        },
+    });
+    console.log(`  ✅ Subscription: Acme Inc → Pro plan`);
+
+    console.log("\n✅ Database seeded successfully!");
+    console.log("\nTest credentials:");
+    console.log("  Admin:  admin@acme.com  / Admin1234!");
+    console.log("  Viewer: viewer@acme.com / Viewer1234!");
+    console.log("  Org slug: acme");
+    console.log("  Dashboard: /acme/dashboard");
 }
 
 main()
