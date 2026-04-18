@@ -151,7 +151,7 @@ export function FlagsProvider({ orgId, children }: FlagsProviderProps) {
 
     const { data, isError, isLoading, refetch } = useQuery({
         queryKey:  featureFlagKeys.all(orgId),
-        queryFn:   () => getFeatureFlags(orgDbId!),
+        queryFn:   () => getFeatureFlags(),
         // Wait until org is hydrated from Zustand so we have the DB id
         enabled:   isAuthenticated && !isLoaded && orgDbId !== null,
         staleTime: 5 * 60 * 1000, // 5 minutes — flags can change but not constantly

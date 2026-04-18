@@ -28,6 +28,11 @@ enum PlanName {
   enterprise
 }
 
+enum RoleType {
+  QUICK
+  SERVICE_BASED
+}
+
 model User {
   id              String    @id @default(cuid())
   email           String    @unique
@@ -45,6 +50,7 @@ model User {
   deletedAt       DateTime?
 
   orgMemberships  OrgMember[]
+  userRoles       UserRole[]
   invitesSent     Invite[]     @relation("InvitedBy")
   auditLogs       AuditLog[]
   orgsCreated     Org[]        @relation("CreatedBy")
@@ -100,21 +106,37 @@ model OrgMember {
 }
 
 model Role {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  permissions Json     @default("[]")
-  isDefault   Boolean  @default(false)
+  permissions Json      @default("[]")
+  isDefault   Boolean   @default(false)
+  type        RoleType  @default(QUICK)
+  serviceKey  String?
+  description String?
   orgId       String
-  org         Org      @relation(fields: [orgId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  org         Org       @relation(fields: [orgId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  members OrgMember[]
-  invites Invite[]
+  members   OrgMember[]
+  userRoles UserRole[]
 
   @@unique([orgId, name])
   @@index([orgId])
   @@map("roles")
+}
+
+model UserRole {
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
 }
 
 model Plan {
@@ -157,8 +179,7 @@ model Invite {
   token       String    @unique
   orgId       String
   org         Org       @relation(fields: [orgId], references: [id])
-  roleId      String
-  role        Role      @relation(fields: [roleId], references: [id])
+  roleIds     String[]
   invitedById String
   invitedBy   User      @relation("InvitedBy", fields: [invitedById], references: [id])
   expiresAt   DateTime

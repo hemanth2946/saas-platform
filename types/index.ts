@@ -62,3 +62,18 @@ export type {
 
 export type { SessionUser, AuthTokens, AuthState } from "./auth.types";
 export type { OrgSummary } from "./org-summary.types";
+
+export type {
+    UserRoleRecord,
+    RoleRecord,
+    ServiceRoleGroup,
+    IAMUser,
+    InviteRecord,
+    InviteValidationResponse,
+    GetUsersResponse,
+    GetRolesResponse,
+    InviteUserRequest,
+    UpdateUserRequest,
+    AcceptInviteRequest,
+    UserStatus,
+} from "./iam.types";

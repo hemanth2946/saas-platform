@@ -37,3 +37,11 @@ export const PlanName = {
 } as const
 
 export type PlanName = (typeof PlanName)[keyof typeof PlanName]
+
+
+export const RoleType = {
+  QUICK: 'QUICK',
+  SERVICE_BASED: 'SERVICE_BASED'
+} as const
+
+export type RoleType = (typeof RoleType)[keyof typeof RoleType]

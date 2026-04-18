@@ -83,6 +83,76 @@ export async function sendVerificationEmail(
  * @example
  * await sendPasswordResetEmail('user@example.com', 'resettoken123')
  */
+// ── Invite params ─────────────────────────────────────────────────────────────
+
+export interface SendInviteEmailParams {
+    email:       string;
+    orgName:     string;
+    inviterName: string;
+    inviteUrl:   string;
+    expiresAt:   Date;
+}
+
+/**
+ * Sends an org invite email to the recipient.
+ * Link expires at the provided expiresAt date.
+ *
+ * @param params - Invite email parameters
+ * @returns Promise resolving when email is sent
+ * @throws {Error} If RESEND_API_KEY is not defined
+ * @throws {Error} If Resend API call fails
+ *
+ * @example
+ * await sendInviteEmail({
+ *   email: 'user@example.com',
+ *   orgName: 'Acme Corp',
+ *   inviterName: 'Alice Admin',
+ *   inviteUrl: 'https://app.example.com/invite/abc123',
+ *   expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+ * })
+ */
+export async function sendInviteEmail(params: SendInviteEmailParams): Promise<void> {
+    const { email, orgName, inviterName, inviteUrl, expiresAt } = params;
+
+    const formattedExpiry = new Date(expiresAt).toLocaleDateString("en-US", {
+        weekday: "long",
+        year:    "numeric",
+        month:   "long",
+        day:     "numeric",
+    });
+
+    await getResendClient().emails.send({
+        from:    FROM_EMAIL,
+        to:      email,
+        subject: `You've been invited to join ${orgName}`,
+        html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2 style="color: #111; margin-bottom: 4px;">You've been invited to join ${orgName}</h2>
+        <p style="color: #555; margin-top: 0;">
+          <strong>${inviterName}</strong> has invited you to join their organization.
+        </p>
+        <a
+          href="${inviteUrl}"
+          style="display:inline-block;margin:16px 0;padding:12px 24px;background:#000;color:#fff;
+                 border-radius:6px;text-decoration:none;font-weight:600;"
+        >
+          Accept Invitation
+        </a>
+        <p style="color: #888; font-size: 13px; margin-top: 8px;">
+          This invitation expires on <strong>${formattedExpiry}</strong>.
+        </p>
+        <p style="color: #888; font-size: 12px; margin-top: 16px;">
+          If the button above doesn't work, copy and paste this link into your browser:<br />
+          <span style="color: #555; word-break: break-all;">${inviteUrl}</span>
+        </p>
+        <p style="color: #aaa; font-size: 12px; margin-top: 24px;">
+          If you did not expect this invitation, you can safely ignore this email.
+        </p>
+      </div>
+    `,
+    });
+}
+
 export async function sendPasswordResetEmail(
     email: string,
     token: string

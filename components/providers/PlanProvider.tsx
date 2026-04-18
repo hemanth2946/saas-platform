@@ -150,7 +150,7 @@ export function PlanProvider({ orgId, children }: PlanProviderProps) {
 
     const { data, isError, isLoading, refetch } = useQuery({
         queryKey: planKeys.config(orgId),
-        queryFn:  () => getPlanConfig(orgDbId!),
+        queryFn:  () => getPlanConfig(),
         // Wait until org is hydrated from Zustand so we have the DB id
         enabled:  isAuthenticated && !isLoaded && orgDbId !== null,
         staleTime: 10 * 60 * 1000, // 10 minutes — plan config changes infrequently

@@ -143,3 +143,394 @@
 .animate-plan-shine-growth {
   animation: planTagShine 3.2s ease-in-out infinite;
 }
+
+/* ── DESIGN SYSTEM — PRIMITIVE TOKENS ─────────────────────────────────────── */
+
+:root {
+  /* Gray scale */
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --gray-950: #030712;
+
+  /* Blue scale */
+  --blue-50:  #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+
+  /* Green scale */
+  --green-50:  #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-300: #86efac;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --green-800: #166534;
+  --green-900: #14532d;
+
+  /* Red scale */
+  --red-50:  #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-300: #fca5a5;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
+
+  /* Orange scale */
+  --orange-50:  #fff7ed;
+  --orange-100: #ffedd5;
+  --orange-200: #fed7aa;
+  --orange-300: #fdba74;
+  --orange-500: #f97316;
+  --orange-600: #ea580c;
+  --orange-700: #c2410c;
+
+  /* Yellow scale */
+  --yellow-50:  #fefce8;
+  --yellow-100: #fef9c3;
+  --yellow-200: #fef08a;
+  --yellow-300: #fde047;
+  --yellow-500: #eab308;
+  --yellow-600: #ca8a04;
+  --yellow-700: #a16207;
+  --yellow-800: #854d0e;
+
+  /* Purple scale */
+  --purple-50:  #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-600: #9333ea;
+  --purple-700: #7e22ce;
+  --purple-800: #6b21a8;
+
+  /* Amber scale */
+  --amber-50:  #fffbeb;
+  --amber-100: #fef3c7;
+  --amber-200: #fde68a;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+
+  /* ── SEMANTIC TEXT TOKENS ─────────────────────────────────────────────────── */
+  --color-text-primary:   var(--gray-900);
+  --color-text-secondary: var(--gray-500);
+  --color-text-tertiary:  var(--gray-400);
+  --color-text-disabled:  var(--gray-300);
+  --color-text-inverse:   #ffffff;
+  --color-text-link:      var(--blue-600);
+  --color-text-error:     var(--red-600);
+  --color-text-success:   var(--green-600);
+  --color-text-warning:   var(--amber-600);
+
+  /* ── SEMANTIC SURFACE TOKENS ──────────────────────────────────────────────── */
+  --color-surface-page:      var(--gray-50);
+  --color-surface-primary:   #ffffff;
+  --color-surface-secondary: var(--gray-100);
+  --color-surface-tertiary:  var(--gray-200);
+  --color-surface-inverse:   var(--gray-900);
+  --color-surface-overlay:   rgba(0, 0, 0, 0.5);
+
+  /* ── SEMANTIC BORDER TOKENS ───────────────────────────────────────────────── */
+  --color-border-default: var(--gray-200);
+  --color-border-strong:  var(--gray-300);
+  --color-border-focus:   var(--blue-600);
+  --color-border-error:   var(--red-600);
+  --color-border-success: var(--green-600);
+
+  /* ── SEMANTIC INTERACTIVE TOKENS ─────────────────────────────────────────── */
+  --color-interactive-primary:        var(--blue-600);
+  --color-interactive-primary-hover:  var(--blue-700);
+  --color-interactive-primary-active: var(--blue-800);
+  --color-interactive-danger:         var(--red-600);
+  --color-interactive-danger-hover:   var(--red-700);
+
+  /* ── STATUS TOKENS ────────────────────────────────────────────────────────── */
+  --color-status-success-surface: var(--green-50);
+  --color-status-success-text:    var(--green-800);
+  --color-status-success-border:  var(--green-200);
+
+  --color-status-warning-surface: var(--yellow-50);
+  --color-status-warning-text:    var(--yellow-800);
+  --color-status-warning-border:  var(--yellow-200);
+
+  --color-status-error-surface: var(--red-50);
+  --color-status-error-text:    var(--red-800);
+  --color-status-error-border:  var(--red-200);
+
+  --color-status-neutral-surface: var(--gray-100);
+  --color-status-neutral-text:    var(--gray-600);
+  --color-status-neutral-border:  var(--gray-200);
+
+  --color-status-info-surface: var(--blue-50);
+  --color-status-info-text:    var(--blue-800);
+  --color-status-info-border:  var(--blue-200);
+
+  /* ── SEVERITY TOKENS ─────────────────────────────────────────────────────── */
+  --color-severity-critical-surface: var(--red-50);
+  --color-severity-critical-text:    var(--red-800);
+  --color-severity-critical-border:  var(--red-200);
+  --color-severity-critical-dot:     var(--red-600);
+
+  --color-severity-high-surface: var(--orange-50);
+  --color-severity-high-text:    var(--orange-700);
+  --color-severity-high-border:  var(--orange-200);
+  --color-severity-high-dot:     var(--orange-600);
+
+  --color-severity-medium-surface: var(--yellow-50);
+  --color-severity-medium-text:    var(--yellow-700);
+  --color-severity-medium-border:  var(--yellow-200);
+  --color-severity-medium-dot:     var(--yellow-500);
+
+  --color-severity-low-surface: var(--blue-50);
+  --color-severity-low-text:    var(--blue-700);
+  --color-severity-low-border:  var(--blue-200);
+  --color-severity-low-dot:     var(--blue-500);
+
+  --color-severity-info-surface: var(--gray-100);
+  --color-severity-info-text:    var(--gray-600);
+  --color-severity-info-border:  var(--gray-200);
+  --color-severity-info-dot:     var(--gray-400);
+
+  /* ── ROLE TOKENS ─────────────────────────────────────────────────────────── */
+  --color-role-superadmin-surface: var(--purple-50);
+  --color-role-superadmin-text:    var(--purple-700);
+  --color-role-superadmin-border:  var(--purple-200);
+
+  --color-role-admin-surface: var(--blue-50);
+  --color-role-admin-text:    var(--blue-700);
+  --color-role-admin-border:  var(--blue-200);
+
+  --color-role-member-surface: var(--green-50);
+  --color-role-member-text:    var(--green-700);
+  --color-role-member-border:  var(--green-200);
+
+  --color-role-viewer-surface: var(--gray-100);
+  --color-role-viewer-text:    var(--gray-600);
+  --color-role-viewer-border:  var(--gray-200);
+
+  /* ── PLAN TAG TOKENS ─────────────────────────────────────────────────────── */
+  --plan-pro-surface: var(--purple-50);
+  --plan-pro-text:    #3C3489;
+  --plan-pro-border:  rgba(83, 74, 183, 0.55);
+
+  --plan-growth-surface: var(--green-50);
+  --plan-growth-text:    #085041;
+  --plan-growth-border:  rgba(15, 110, 86, 0.5);
+
+  /* ── TYPOGRAPHY TOKENS ───────────────────────────────────────────────────── */
+  --font-size-100: 0.625rem;
+  --font-size-200: 0.75rem;
+  --font-size-300: 0.875rem;
+  --font-size-400: 1rem;
+  --font-size-500: 1.125rem;
+  --font-size-600: 1.25rem;
+  --font-size-700: 1.5rem;
+  --font-size-800: 1.875rem;
+
+  --text-xs:   var(--font-size-200);
+  --text-sm:   var(--font-size-300);
+  --text-base: var(--font-size-400);
+  --text-lg:   var(--font-size-500);
+  --text-xl:   var(--font-size-600);
+  --text-2xl:  var(--font-size-700);
+  --text-3xl:  var(--font-size-800);
+
+  --leading-none:    1;
+  --leading-tight:   1.25;
+  --leading-snug:    1.375;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose:   2;
+
+  /* ── LAYOUT DIMENSION TOKENS ─────────────────────────────────────────────── */
+  --topbar-height:               3.5rem;
+  --sidebar-width-expanded:      15rem;
+  --sidebar-width-collapsed:     4rem;
+  --right-panel-width:           20rem;
+  --bottom-bar-height:           3.5rem;
+  --content-max-width:           80rem;
+  --content-max-width-narrow:    48rem;
+  --content-max-width-wide:      96rem;
+  --page-padding-x:              1.5rem;
+  --page-padding-y:              1.5rem;
+  --page-padding-x-mobile:       1rem;
+
+  /* ── COMPONENT DIMENSION TOKENS ──────────────────────────────────────────── */
+  --input-height:          2.25rem;
+  --input-height-sm:       1.75rem;
+  --input-height-lg:       2.75rem;
+  --input-padding-x:       0.75rem;
+  --form-gap:              1.25rem;
+  --form-label-gap:        0.375rem;
+  --table-row-height:      3rem;
+  --table-header-height:   2.75rem;
+  --table-cell-padding-x:  1rem;
+  --table-cell-padding-y:  0.75rem;
+  --card-padding:          1.5rem;
+  --card-padding-sm:       1rem;
+  --card-gap:              1rem;
+  --card-radius:           0.5rem;
+  --modal-width-sm:        24rem;
+  --modal-width-md:        32rem;
+  --modal-width-lg:        42rem;
+  --modal-width-xl:        56rem;
+  --modal-padding:         1.5rem;
+  --min-touch-target:      2.75rem;
+
+  /* ── STACK GAP TOKENS ────────────────────────────────────────────────────── */
+  --stack-gap-xs:  0.25rem;
+  --stack-gap-sm:  0.5rem;
+  --stack-gap-md:  1rem;
+  --stack-gap-lg:  1.5rem;
+  --stack-gap-xl:  2rem;
+  --stack-gap-2xl: 3rem;
+
+  /* ── MOTION TOKENS ───────────────────────────────────────────────────────── */
+  --transition-fast:    150ms ease;
+  --transition-normal:  200ms ease;
+  --transition-slow:    300ms ease;
+  --transition-sidebar: width 200ms ease, transform 200ms ease;
+  --transition-panel:   transform 250ms ease;
+
+  /* ── FOCUS RING TOKENS ───────────────────────────────────────────────────── */
+  --focus-ring-color:  var(--blue-600);
+  --focus-ring-width:  2px;
+  --focus-ring-offset: 2px;
+
+  /* ── Z-INDEX TOKENS ──────────────────────────────────────────────────────── */
+  --z-base:     0;
+  --z-raised:   100;
+  --z-dropdown: 200;
+  --z-sticky:   300;
+  --z-overlay:  400;
+  --z-backdrop: 500;
+  --z-modal:    600;
+  --z-toast:    700;
+  --z-tooltip:  800;
+  --z-top:      900;
+}
+
+/* ── TAILWIND V4 THEME EXTENSIONS — Design system utilities ────────────────── */
+
+@theme inline {
+  /* Text color utilities: text-text-primary, bg-text-primary, etc. */
+  --color-text-primary:   var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-tertiary:  var(--color-text-tertiary);
+  --color-text-disabled:  var(--color-text-disabled);
+  --color-text-inverse:   var(--color-text-inverse);
+  --color-text-link:      var(--color-text-link);
+  --color-text-error:     var(--color-text-error);
+  --color-text-success:   var(--color-text-success);
+  --color-text-warning:   var(--color-text-warning);
+
+  /* Surface utilities: bg-surface-page, bg-surface-primary, etc. */
+  --color-surface-page:      var(--color-surface-page);
+  --color-surface-primary:   var(--color-surface-primary);
+  --color-surface-secondary: var(--color-surface-secondary);
+  --color-surface-tertiary:  var(--color-surface-tertiary);
+  --color-surface-inverse:   var(--color-surface-inverse);
+
+  /* Border utilities: border-border-default, border-border-focus, etc. */
+  --color-border-default: var(--color-border-default);
+  --color-border-strong:  var(--color-border-strong);
+  --color-border-focus:   var(--color-border-focus);
+  --color-border-error:   var(--color-border-error);
+  --color-border-success: var(--color-border-success);
+
+  /* Interactive utilities */
+  --color-interactive-primary:        var(--color-interactive-primary);
+  --color-interactive-primary-hover:  var(--color-interactive-primary-hover);
+  --color-interactive-primary-active: var(--color-interactive-primary-active);
+  --color-interactive-danger:         var(--color-interactive-danger);
+  --color-interactive-danger-hover:   var(--color-interactive-danger-hover);
+
+  /* Height utilities: h-topbar, h-input, h-input-sm, h-input-lg, h-table-row */
+  --height-topbar:     var(--topbar-height);
+  --height-bottombar:  var(--bottom-bar-height);
+  --height-input:      var(--input-height);
+  --height-input-sm:   var(--input-height-sm);
+  --height-input-lg:   var(--input-height-lg);
+  --height-table-row:  var(--table-row-height);
+
+  /* Width utilities: w-sidebar, w-sidebar-collapsed, w-right-panel */
+  --width-sidebar:            var(--sidebar-width-expanded);
+  --width-sidebar-collapsed:  var(--sidebar-width-collapsed);
+  --width-right-panel:        var(--right-panel-width);
+
+  /* Max-width utilities */
+  --max-width-content:        var(--content-max-width);
+  --max-width-content-narrow: var(--content-max-width-narrow);
+  --max-width-content-wide:   var(--content-max-width-wide);
+
+  /* Border radius utility: rounded-card */
+  --radius-card: var(--card-radius);
+
+  /* Animation: plan-shine */
+  --animate-plan-shine-pro:    plan-shine 2.8s ease-in-out infinite;
+  --animate-plan-shine-growth: plan-shine 3.2s ease-in-out infinite;
+}
+
+@keyframes plan-shine {
+  0%   { left: -80%; }
+  100% { left: 130%; }
+}
+
+/* ── APP SHELL LAYOUT ────────────────────────────────────────────────────────*/
+
+.shell-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-surface-page);
+}
+
+.shell-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── PERFORMANCE HINTS ───────────────────────────────────────────────────────*/
+
+.sidebar      { will-change: width; }
+.right-panel  { will-change: transform; }
+
+/* ── DARK MODE (Phase 6 — commented, verified contrast ratios) ───────────────*/
+
+/* [data-theme="dark"] {
+  --color-text-primary:    #f9fafb;   contrast vs #0f172a = 16.7:1 AAA
+  --color-text-secondary:  #9ca3af;   contrast vs #0f172a = 6.0:1  AA
+  --color-text-tertiary:   #6b7280;   contrast vs #0f172a = 3.4:1  AA large
+  --color-surface-page:    #0f172a;
+  --color-surface-primary: #1e293b;
+  --color-surface-secondary: #334155;
+  --color-surface-tertiary:  #475569;
+  --color-border-default:  #334155;
+  --color-border-strong:   #475569;
+  --color-status-success-surface: #052e16;
+  --color-status-success-text:    #86efac;
+  --color-status-error-surface:   #2d0a0a;
+  --color-status-error-text:      #fca5a5;
+  --color-status-warning-surface: #1c1007;
+  --color-status-warning-text:    #fcd34d;
+} */

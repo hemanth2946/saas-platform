@@ -5,7 +5,14 @@
       "Bash(npm run:*)",
       "Bash(npx eslint:*)",
       "Bash(npx next:*)",
-      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f[''''filePath''''], r[''''ruleId''''], r[''''line''''], r[''''message'''']\\) for f in data for r in f[''''messages''''] if ''''logger'''' in f[''''filePath'''']]\")"
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f[''''filePath''''], r[''''ruleId''''], r[''''line''''], r[''''message'''']\\) for f in data for r in f[''''messages''''] if ''''logger'''' in f[''''filePath'''']]\")",
+      "Bash(find /c/Users/varsh/OneDrive/Desktop/saas-platform -type f -name *.prisma -o -type f -path */types/* -o -type f -name auth.store.ts -o -type f -name axios.ts)",
+      "Bash(mkdir -p \"c:/Users/varsh/OneDrive/Desktop/saas-platform/app/api/v1/users/[userId]\")",
+      "Bash(mkdir -p \"c:/Users/varsh/OneDrive/Desktop/saas-platform/app/api/v1/invite/[token]/accept\")",
+      "Bash(mkdir -p \"c:/Users/varsh/OneDrive/Desktop/saas-platform/app/[orgId]/iam\")",
+      "Bash(mkdir -p \"c:/Users/varsh/OneDrive/Desktop/saas-platform/app/\\(auth\\)/invite/[token]\")",
+      "Bash(npx prisma:*)",
+      "Bash(node -e ':*)"
     ]
   }
 }

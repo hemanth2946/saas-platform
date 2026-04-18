@@ -55,6 +55,7 @@ export const ModelName = {
   Org: 'Org',
   OrgMember: 'OrgMember',
   Role: 'Role',
+  UserRole: 'UserRole',
   Plan: 'Plan',
   Subscription: 'Subscription',
   Invite: 'Invite',
@@ -133,12 +134,24 @@ export const RoleScalarFieldEnum = {
   name: 'name',
   permissions: 'permissions',
   isDefault: 'isDefault',
+  type: 'type',
+  serviceKey: 'serviceKey',
+  description: 'description',
   orgId: 'orgId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
+
+
+export const UserRoleScalarFieldEnum = {
+  userId: 'userId',
+  roleId: 'roleId',
+  createdAt: 'createdAt'
+} as const
+
+export type UserRoleScalarFieldEnum = (typeof UserRoleScalarFieldEnum)[keyof typeof UserRoleScalarFieldEnum]
 
 
 export const PlanScalarFieldEnum = {
@@ -177,7 +190,7 @@ export const InviteScalarFieldEnum = {
   email: 'email',
   token: 'token',
   orgId: 'orgId',
-  roleId: 'roleId',
+  roleIds: 'roleIds',
   invitedById: 'invitedById',
   expiresAt: 'expiresAt',
   acceptedAt: 'acceptedAt',

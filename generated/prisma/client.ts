@@ -62,6 +62,11 @@ export type OrgMember = Prisma.OrgMemberModel
  */
 export type Role = Prisma.RoleModel
 /**
+ * Model UserRole
+ * 
+ */
+export type UserRole = Prisma.UserRoleModel
+/**
  * Model Plan
  * 
  */

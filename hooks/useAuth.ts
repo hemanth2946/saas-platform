@@ -15,7 +15,7 @@ export function useAuth() {
     const org = useAuthStore((state) => state.org);
     const plan = useAuthStore((state) => state.plan);
     const orgs = useAuthStore((state) => state.orgs);
-    const role = useAuthStore((state) => state.role);
+    const roles = useAuthStore((state) => state.roles);
     const permissions = useAuthStore((state) => state.permissions);
     const permissionsLoaded = useAuthStore((state) => state.permissionsLoaded);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -26,7 +26,7 @@ export function useAuth() {
         org,
         plan,
         orgs,
-        role,
+        roles,
         permissions,
         permissionsLoaded,
         isAuthenticated,

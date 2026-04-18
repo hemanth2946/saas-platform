@@ -27,104 +27,155 @@ async function hash(password: string) {
  */
 const SEED_USERS = [
     {
-        name: "Alice Admin",
+        name:  "Alice Admin",
         email: "alice@acme.com",
-        role: "super_admin",
+        role:  "super_admin",
     },
     {
-        name: "Bob Member",
+        name:  "Bob Member",
         email: "bob@acme.com",
-        role: "member",
+        role:  "member",
     },
     {
-        name: "Carol Viewer",
+        name:  "Carol Viewer",
         email: "carol@acme.com",
-        role: "viewer",
+        role:  "viewer",
     },
     {
         // Multi-org user — belongs to both Acme and Globex
-        name: "Dave Multi",
+        name:  "Dave Multi",
         email: "dave@multi.com",
-        role: "admin",
+        role:  "admin",
     },
 ] as const;
 
-const ROLE_PERMISSIONS: Record<string, string[]> = {
+// ── Quick Role permissions ─────────────────────────────────────────────────────
+
+const QUICK_ROLE_PERMISSIONS: Record<string, string[]> = {
     super_admin: [
-        "dashboard.view",
-        "dashboard.edit",
-        "iam.view",
-        "iam.manage",
-        "iam.invite",
-        "iam.remove",
-        "iam.role.assign",
-        "billing.view",
-        "billing.manage",
-        "settings.view",
-        "settings.edit",
-        "settings.manage",
+        "dashboard.view", "dashboard.edit",
+        "iam.view", "iam.manage", "iam.invite", "iam.remove", "iam.role.assign",
+        "billing.view", "billing.manage",
+        "settings.view", "settings.edit", "settings.manage",
         "audit.view",
+        "scan.view", "scan.create",
     ],
     admin: [
-        "dashboard.view",
-        "dashboard.edit",
-        "iam.view",
-        "iam.manage",
-        "iam.invite",
-        "iam.remove",
-        "iam.role.assign",
+        "dashboard.view", "dashboard.edit",
+        "iam.view", "iam.manage", "iam.invite", "iam.remove", "iam.role.assign",
         "billing.view",
-        "settings.view",
-        "settings.edit",
-        "settings.manage",
+        "settings.view", "settings.edit", "settings.manage",
         "audit.view",
+        "scan.view", "scan.create",
     ],
     member: [
         "dashboard.view",
-        "settings.view",
+        "scan.view", "scan.create",
     ],
     viewer: [
         "dashboard.view",
+        "scan.view",
     ],
 };
 
-// ============================================
-// PLAN VALUES — source of truth for seed
-// Must match STATIC_PLAN_CONFIG in config/planConfig.ts exactly.
-// Plan.features stores PlanFeatures JSON.
-// Plan.limits stores { entitlements, limits, access } JSON.
-// ============================================
+// ── Service-based role definitions ────────────────────────────────────────────
+
+interface ServiceRoleDef {
+    name:        string;
+    serviceKey:  string;
+    description: string;
+    permissions: string[];
+}
+
+const SERVICE_ROLES: ServiceRoleDef[] = [
+    // Risk Overview
+    {
+        name:        "Risk Overview - View",
+        serviceKey:  "risk-overview",
+        description: "View risk overview dashboard",
+        permissions: ["dashboard.view"],
+    },
+    {
+        name:        "Risk Overview - Export",
+        serviceKey:  "risk-overview",
+        description: "View and export risk overview data",
+        permissions: ["dashboard.view", "audit.view"],
+    },
+    // Network Perimeter
+    {
+        name:        "Network Perimeter - View",
+        serviceKey:  "network-perimeter",
+        description: "View network perimeter scans",
+        permissions: ["scan.view"],
+    },
+    {
+        name:        "Network Perimeter - Manage",
+        serviceKey:  "network-perimeter",
+        description: "View and manage network perimeter scans",
+        permissions: ["scan.view", "scan.create"],
+    },
+    // Cloud Workload
+    {
+        name:        "Cloud Workload - View",
+        serviceKey:  "cloud-workload",
+        description: "View cloud workload scans",
+        permissions: ["scan.view"],
+    },
+    {
+        name:        "Cloud Workload - Manage",
+        serviceKey:  "cloud-workload",
+        description: "View and manage cloud workload scans",
+        permissions: ["scan.view", "scan.create"],
+    },
+    // Code Security
+    {
+        name:        "Code Security - View",
+        serviceKey:  "code-security",
+        description: "View code security scans",
+        permissions: ["scan.view"],
+    },
+    {
+        name:        "Code Security - Manage",
+        serviceKey:  "code-security",
+        description: "View and manage code security scans",
+        permissions: ["scan.view", "scan.create"],
+    },
+    // Cloud Security Posture
+    {
+        name:        "Cloud Security Posture - View",
+        serviceKey:  "cloud-security-posture",
+        description: "View cloud security posture",
+        permissions: ["scan.view"],
+    },
+    {
+        name:        "Cloud Security Posture - Export",
+        serviceKey:  "cloud-security-posture",
+        description: "View and export cloud security posture data",
+        permissions: ["scan.view", "audit.view"],
+    },
+    {
+        name:        "Cloud Security Posture - Manage",
+        serviceKey:  "cloud-security-posture",
+        description: "View, export, and manage cloud security posture",
+        permissions: ["scan.view", "scan.create", "audit.view"],
+    },
+];
+
+// ── Plan values ──────────────────────────────────────────────────────────────
 
 const PLAN_SEED_DATA = [
     {
         name: "free" as const,
         features: {
-            scanning: {
-                multiScanner:      { enabled: false },
-                scanSchedule:      { enabled: false },
-            },
-            reporting: {
-                evidenceCapturing: { enabled: false },
-            },
-            ai: {
-                chat:              { enabled: false },
-            },
-            audit: {
-                export:            { enabled: false },
-            },
+            scanning:  { multiScanner: { enabled: false }, scanSchedule: { enabled: false } },
+            reporting: { evidenceCapturing: { enabled: false } },
+            ai:        { chat: { enabled: false } },
+            audit:     { export: { enabled: false } },
         },
         limits: {
-            entitlements: {
-                maxUsers:       2,
-                maxScansPerDay: 5,
-                retentionDays:  7,
-                maxWorkers:     1,
-            },
-            limits: {
-                aiQueriesPerMonth: 0,
-                exportFormats:     ["csv"],
-            },
-            access: {
+            entitlements: { maxUsers: 2, maxScansPerDay: 5, retentionDays: 7, maxWorkers: 1 },
+            limits:       { aiQueriesPerMonth: 0, exportFormats: ["csv"] },
+            access:       {
                 scanners:     { mode: "limited", exclude: [] },
                 integrations: { mode: "limited", exclude: [] },
             },
@@ -134,32 +185,15 @@ const PLAN_SEED_DATA = [
     {
         name: "pro" as const,
         features: {
-            scanning: {
-                multiScanner:      { enabled: true },
-                scanSchedule:      { enabled: true },
-            },
-            reporting: {
-                evidenceCapturing: { enabled: true },
-            },
-            ai: {
-                chat:              { enabled: true },
-            },
-            audit: {
-                export:            { enabled: true },
-            },
+            scanning:  { multiScanner: { enabled: true }, scanSchedule: { enabled: true } },
+            reporting: { evidenceCapturing: { enabled: true } },
+            ai:        { chat: { enabled: true } },
+            audit:     { export: { enabled: true } },
         },
         limits: {
-            entitlements: {
-                maxUsers:       10,
-                maxScansPerDay: 50,
-                retentionDays:  30,
-                maxWorkers:     5,
-            },
-            limits: {
-                aiQueriesPerMonth: 100,
-                exportFormats:     ["csv", "pdf"],
-            },
-            access: {
+            entitlements: { maxUsers: 10, maxScansPerDay: 50, retentionDays: 30, maxWorkers: 5 },
+            limits:       { aiQueriesPerMonth: 100, exportFormats: ["csv", "pdf"] },
+            access:       {
                 scanners:     { mode: "all", exclude: [] },
                 integrations: { mode: "all", exclude: [] },
             },
@@ -169,32 +203,15 @@ const PLAN_SEED_DATA = [
     {
         name: "growth" as const,
         features: {
-            scanning: {
-                multiScanner:      { enabled: true },
-                scanSchedule:      { enabled: true },
-            },
-            reporting: {
-                evidenceCapturing: { enabled: true },
-            },
-            ai: {
-                chat:              { enabled: true },
-            },
-            audit: {
-                export:            { enabled: true },
-            },
+            scanning:  { multiScanner: { enabled: true }, scanSchedule: { enabled: true } },
+            reporting: { evidenceCapturing: { enabled: true } },
+            ai:        { chat: { enabled: true } },
+            audit:     { export: { enabled: true } },
         },
         limits: {
-            entitlements: {
-                maxUsers:       null,  // unlimited
-                maxScansPerDay: null,  // unlimited
-                retentionDays:  90,
-                maxWorkers:     20,
-            },
-            limits: {
-                aiQueriesPerMonth: null,  // unlimited
-                exportFormats:     ["csv", "pdf", "json"],
-            },
-            access: {
+            entitlements: { maxUsers: null, maxScansPerDay: null, retentionDays: 90, maxWorkers: 20 },
+            limits:       { aiQueriesPerMonth: null, exportFormats: ["csv", "pdf", "json"] },
+            access:       {
                 scanners:     { mode: "all", exclude: [] },
                 integrations: { mode: "all", exclude: [] },
             },
@@ -202,35 +219,17 @@ const PLAN_SEED_DATA = [
         quotas: {},
     },
     {
-        // Enterprise — keep for DB schema compat; not used in plan gating
         name: "enterprise" as const,
         features: {
-            scanning: {
-                multiScanner:      { enabled: true },
-                scanSchedule:      { enabled: true },
-            },
-            reporting: {
-                evidenceCapturing: { enabled: true },
-            },
-            ai: {
-                chat:              { enabled: true },
-            },
-            audit: {
-                export:            { enabled: true },
-            },
+            scanning:  { multiScanner: { enabled: true }, scanSchedule: { enabled: true } },
+            reporting: { evidenceCapturing: { enabled: true } },
+            ai:        { chat: { enabled: true } },
+            audit:     { export: { enabled: true } },
         },
         limits: {
-            entitlements: {
-                maxUsers:       null,
-                maxScansPerDay: null,
-                retentionDays:  365,
-                maxWorkers:     100,
-            },
-            limits: {
-                aiQueriesPerMonth: null,
-                exportFormats:     ["csv", "pdf", "json"],
-            },
-            access: {
+            entitlements: { maxUsers: null, maxScansPerDay: null, retentionDays: 365, maxWorkers: 100 },
+            limits:       { aiQueriesPerMonth: null, exportFormats: ["csv", "pdf", "json"] },
+            access:       {
                 scanners:     { mode: "all", exclude: [] },
                 integrations: { mode: "all", exclude: [] },
             },
@@ -252,18 +251,9 @@ async function main() {
     const planMap: Record<string, string> = {};
     for (const plan of PLAN_SEED_DATA) {
         const created = await prisma.plan.upsert({
-            where: { name: plan.name },
-            update: {
-                features: plan.features,
-                limits:   plan.limits,
-                quotas:   plan.quotas,
-            },
-            create: {
-                name:     plan.name,
-                features: plan.features,
-                limits:   plan.limits,
-                quotas:   plan.quotas,
-            },
+            where:  { name: plan.name },
+            update: { features: plan.features, limits: plan.limits, quotas: plan.quotas },
+            create: { name: plan.name, features: plan.features, limits: plan.limits, quotas: plan.quotas },
         });
         planMap[plan.name] = created.id;
         console.log(`  ✅ Plan: ${plan.name}`);
@@ -273,27 +263,9 @@ async function main() {
     console.log("\n🏢 Seeding organisations...");
 
     const SEED_ORGS = [
-        {
-            name:     "Acme Corp",
-            slug:     "acme",
-            domain:   "acme.com",
-            timezone: "America/New_York",
-            plan:     "pro" as const,
-        },
-        {
-            name:     "Globex Inc",
-            slug:     "globex",
-            domain:   "globex.com",
-            timezone: "America/Los_Angeles",
-            plan:     "growth" as const,
-        },
-        {
-            name:     "Initech",
-            slug:     "initech",
-            domain:   null,
-            timezone: "UTC",
-            plan:     "free" as const,
-        },
+        { name: "Acme Corp",  slug: "acme",    domain: "acme.com",   timezone: "America/New_York",    plan: "pro"    as const },
+        { name: "Globex Inc", slug: "globex",  domain: "globex.com", timezone: "America/Los_Angeles", plan: "growth" as const },
+        { name: "Initech",    slug: "initech", domain: null,         timezone: "UTC",                 plan: "free"   as const },
     ];
 
     // ── 3. Users ─────────────────────────────────────────────────────────
@@ -304,11 +276,8 @@ async function main() {
 
     for (const userData of SEED_USERS) {
         const user = await prisma.user.upsert({
-            where: { email: userData.email },
-            update: {
-                name:       userData.name,
-                isVerified: true,
-            },
+            where:  { email: userData.email },
+            update: { name: userData.name, isVerified: true },
             create: {
                 name:       userData.name,
                 email:      userData.email,
@@ -322,7 +291,7 @@ async function main() {
     }
 
     // Alice is the creator for all orgs
-    const aliceId = userMap["alice@acme.com"];
+    const aliceId = userMap["alice@acme.com"]!;
 
     // ── 4. Create Orgs ────────────────────────────────────────────────────
     console.log("\n🏢 Creating orgs...");
@@ -331,12 +300,8 @@ async function main() {
 
     for (const orgData of SEED_ORGS) {
         const org = await prisma.org.upsert({
-            where: { slug: orgData.slug },
-            update: {
-                name:     orgData.name,
-                domain:   orgData.domain,
-                timezone: orgData.timezone,
-            },
+            where:  { slug: orgData.slug },
+            update: { name: orgData.name, domain: orgData.domain, timezone: orgData.timezone },
             create: {
                 name:        orgData.name,
                 slug:        orgData.slug,
@@ -348,104 +313,145 @@ async function main() {
         orgMap[orgData.slug] = org.id;
         console.log(`  ✅ Org: ${orgData.name} (/${orgData.slug})`);
 
-        // Create subscription for this org
         await prisma.subscription.upsert({
-            where: { orgId: org.id },
+            where:  { orgId: org.id },
             update: { status: "active" },
-            create: {
-                orgId:  org.id,
-                planId: planMap[orgData.plan],
-                status: "active",
-            },
+            create: { orgId: org.id, planId: planMap[orgData.plan]!, status: "active" },
         });
         console.log(`     💳 Subscription: ${orgData.plan}`);
     }
 
-    // ── 5. Roles + Memberships ────────────────────────────────────────────
-    console.log("\n🔐 Seeding roles and memberships...");
+    // ── 5. Quick Roles + Memberships ──────────────────────────────────────
+    console.log("\n🔐 Seeding quick roles and memberships...");
 
     /**
      * Membership map:
      * Acme Corp   → Alice (super_admin), Bob (member), Carol (viewer), Dave (admin)
-     * Globex Inc  → Dave (admin)
+     * Globex Inc  → Dave (admin), Alice (super_admin)
      * Initech     → Alice (super_admin), Bob (member)
      */
     const MEMBERSHIPS: Array<{
         orgSlug:   string;
         userEmail: string;
-        role:      keyof typeof ROLE_PERMISSIONS;
+        role:      keyof typeof QUICK_ROLE_PERMISSIONS;
     }> = [
-        // Acme Corp
         { orgSlug: "acme",    userEmail: "alice@acme.com",  role: "super_admin" },
         { orgSlug: "acme",    userEmail: "bob@acme.com",    role: "member"      },
         { orgSlug: "acme",    userEmail: "carol@acme.com",  role: "viewer"      },
         { orgSlug: "acme",    userEmail: "dave@multi.com",  role: "admin"       },
-        // Globex Inc — Dave belongs here too (multi-org demo)
         { orgSlug: "globex",  userEmail: "dave@multi.com",  role: "admin"       },
         { orgSlug: "globex",  userEmail: "alice@acme.com",  role: "super_admin" },
-        // Initech
         { orgSlug: "initech", userEmail: "alice@acme.com",  role: "super_admin" },
         { orgSlug: "initech", userEmail: "bob@acme.com",    role: "member"      },
     ];
 
-    for (const m of MEMBERSHIPS) {
-        const orgId  = orgMap[m.orgSlug];
-        const userId = userMap[m.userEmail];
+    // Track created quick roles: orgSlug+roleName → roleId
+    const quickRoleMap: Record<string, string> = {};
 
-        // Upsert role for this org+name combo
+    for (const m of MEMBERSHIPS) {
+        const orgId  = orgMap[m.orgSlug]!;
+        const userId = userMap[m.userEmail]!;
+
+        // Upsert Quick Role
         const role = await prisma.role.upsert({
             where:  { orgId_name: { orgId, name: m.role } },
-            update: { permissions: ROLE_PERMISSIONS[m.role] },
+            update: { permissions: QUICK_ROLE_PERMISSIONS[m.role], type: "QUICK" },
             create: {
                 name:        m.role,
                 orgId,
-                permissions: ROLE_PERMISSIONS[m.role],
+                permissions: QUICK_ROLE_PERMISSIONS[m.role],
                 isDefault:   m.role === "member",
+                type:        "QUICK",
             },
         });
+        quickRoleMap[`${m.orgSlug}:${m.role}`] = role.id;
 
-        // Upsert org membership
+        // Upsert OrgMember (for status tracking)
         await prisma.orgMember.upsert({
             where:  { userId_orgId: { userId, orgId } },
             update: { roleId: role.id, status: "active" },
-            create: {
-                userId,
-                orgId,
-                roleId: role.id,
-                status: "active",
-            },
+            create: { userId, orgId, roleId: role.id, status: "active" },
+        });
+
+        // Upsert UserRole (many-to-many)
+        await prisma.userRole.upsert({
+            where:  { userId_roleId: { userId, roleId: role.id } },
+            update: {},
+            create: { userId, roleId: role.id },
         });
 
         console.log(`  ✅ ${m.userEmail} → ${m.orgSlug} as ${m.role}`);
     }
 
-    // ── 6. Feature Flags ──────────────────────────────────────────────────
-    // Seed flags for all orgs.
-    // beta-scanner and bulk-actions are ON so you can immediately test
-    // useFeatureFlag() returns enabled: true without any manual DB changes.
+    // ── 6. Service-Based Roles (for each org) ────────────────────────────
+    console.log("\n🔧 Seeding service-based roles...");
+
+    // Track service roles: orgSlug+roleName → roleId
+    const serviceRoleMap: Record<string, string> = {};
+
+    for (const orgSlug of ["acme", "globex", "initech"]) {
+        const orgId = orgMap[orgSlug]!;
+
+        for (const srDef of SERVICE_ROLES) {
+            const role = await prisma.role.upsert({
+                where:  { orgId_name: { orgId, name: srDef.name } },
+                update: {
+                    permissions: srDef.permissions,
+                    type:        "SERVICE_BASED",
+                    serviceKey:  srDef.serviceKey,
+                    description: srDef.description,
+                },
+                create: {
+                    name:        srDef.name,
+                    orgId,
+                    permissions: srDef.permissions,
+                    type:        "SERVICE_BASED",
+                    serviceKey:  srDef.serviceKey,
+                    description: srDef.description,
+                },
+            });
+            serviceRoleMap[`${orgSlug}:${srDef.name}`] = role.id;
+        }
+        console.log(`  ✅ Service roles for ${orgSlug}`);
+    }
+
+    // ── 7. Extra UserRole assignments (multi-role demo) ──────────────────
+    console.log("\n👥 Adding extra UserRole assignments...");
+
+    // Carol (viewer in acme) also gets Risk Overview - View service role
+    const carolId          = userMap["carol@acme.com"]!;
+    const acmeRiskViewRole = serviceRoleMap["acme:Risk Overview - View"];
+
+    if (carolId && acmeRiskViewRole) {
+        await prisma.userRole.upsert({
+            where:  { userId_roleId: { userId: carolId, roleId: acmeRiskViewRole } },
+            update: {},
+            create: { userId: carolId, roleId: acmeRiskViewRole },
+        });
+        console.log("  ✅ carol@acme.com → Risk Overview - View (multi-role demo)");
+    }
+
+    // ── 8. Feature Flags ──────────────────────────────────────────────────
     console.log("\n🚩 Seeding feature flags...");
 
     const FLAG_SEEDS: Array<{
-        orgSlug:       string;
-        key:           string;
-        enabled:       boolean;
+        orgSlug:        string;
+        key:            string;
+        enabled:        boolean;
         rolloutPercent: number;
     }> = [
-        // Acme Corp (Pro plan) — beta-scanner and bulk-actions ON for testing
         { orgSlug: "acme", key: "new-dashboard",      enabled: false, rolloutPercent: 0   },
         { orgSlug: "acme", key: "beta-scanner",       enabled: true,  rolloutPercent: 100 },
         { orgSlug: "acme", key: "ai-suggestions",     enabled: false, rolloutPercent: 0   },
         { orgSlug: "acme", key: "advanced-reporting", enabled: false, rolloutPercent: 0   },
         { orgSlug: "acme", key: "bulk-actions",       enabled: true,  rolloutPercent: 100 },
 
-        // Globex Inc (Growth plan) — same defaults
         { orgSlug: "globex", key: "new-dashboard",      enabled: false, rolloutPercent: 0   },
         { orgSlug: "globex", key: "beta-scanner",       enabled: true,  rolloutPercent: 100 },
         { orgSlug: "globex", key: "ai-suggestions",     enabled: false, rolloutPercent: 0   },
         { orgSlug: "globex", key: "advanced-reporting", enabled: false, rolloutPercent: 0   },
         { orgSlug: "globex", key: "bulk-actions",       enabled: true,  rolloutPercent: 100 },
 
-        // Initech (Free plan) — all flags off
         { orgSlug: "initech", key: "new-dashboard",      enabled: false, rolloutPercent: 0 },
         { orgSlug: "initech", key: "beta-scanner",       enabled: false, rolloutPercent: 0 },
         { orgSlug: "initech", key: "ai-suggestions",     enabled: false, rolloutPercent: 0 },
@@ -454,16 +460,11 @@ async function main() {
     ];
 
     for (const flag of FLAG_SEEDS) {
-        const orgId = orgMap[flag.orgSlug];
+        const orgId = orgMap[flag.orgSlug]!;
         await prisma.featureFlag.upsert({
             where:  { orgId_key: { orgId, key: flag.key } },
             update: { enabled: flag.enabled, rolloutPercent: flag.rolloutPercent },
-            create: {
-                orgId,
-                key:           flag.key,
-                enabled:       flag.enabled,
-                rolloutPercent: flag.rolloutPercent,
-            },
+            create: { orgId, key: flag.key, enabled: flag.enabled, rolloutPercent: flag.rolloutPercent },
         });
         const status = flag.enabled ? "✅ ON " : "⭕ OFF";
         console.log(`  ${status} ${flag.orgSlug}/${flag.key}`);
@@ -471,26 +472,30 @@ async function main() {
 
     // ── Summary ───────────────────────────────────────────────────────────
     console.log(`
-╔════════════════════════════════════════════╗
-║           🌱 Seed complete!                ║
-╠════════════════════════════════════════════╣
-║  All passwords: Password123!               ║
-╠════════════════════════════════════════════╣
-║  alice@acme.com   → acme, globex, initech  ║
-║  bob@acme.com     → acme, initech          ║
-║  carol@acme.com   → acme (viewer)          ║
-║  dave@multi.com   → acme, globex (admin)   ║
-╠════════════════════════════════════════════╣
-║  Orgs                                      ║
-║  /acme    → Pro plan                       ║
-║  /globex  → Growth plan                    ║
-║  /initech → Free plan                      ║
-╠════════════════════════════════════════════╣
-║  Feature Flags (acme/globex)               ║
-║  beta-scanner    → ON  (rollout: 100%)     ║
-║  bulk-actions    → ON  (rollout: 100%)     ║
-║  all others      → OFF                     ║
-╚════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════╗
+║                  🌱 Seed complete!                       ║
+╠══════════════════════════════════════════════════════════╣
+║  All passwords: Password123!                             ║
+╠══════════════════════════════════════════════════════════╣
+║  alice@acme.com   → acme, globex, initech (super_admin) ║
+║  bob@acme.com     → acme, initech (member)              ║
+║  carol@acme.com   → acme (viewer + risk-overview view)  ║
+║  dave@multi.com   → acme, globex (admin)                ║
+╠══════════════════════════════════════════════════════════╣
+║  Quick roles: super_admin, admin, member, viewer         ║
+║  Service roles: 11 roles across 5 services               ║
+║  UserRole table: populated for all memberships           ║
+╠══════════════════════════════════════════════════════════╣
+║  Orgs                                                    ║
+║  /acme    → Pro plan                                     ║
+║  /globex  → Growth plan                                  ║
+║  /initech → Free plan                                    ║
+╠══════════════════════════════════════════════════════════╣
+║  Feature Flags (acme/globex)                             ║
+║  beta-scanner  → ON  (rollout: 100%)                    ║
+║  bulk-actions  → ON  (rollout: 100%)                    ║
+║  all others    → OFF                                     ║
+╚══════════════════════════════════════════════════════════╝
 `);
 }
 

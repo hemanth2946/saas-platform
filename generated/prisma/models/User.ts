@@ -255,6 +255,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   orgMemberships?: Prisma.OrgMemberListRelationFilter
+  userRoles?: Prisma.UserRoleListRelationFilter
   invitesSent?: Prisma.InviteListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   orgsCreated?: Prisma.OrgListRelationFilter
@@ -276,6 +277,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   orgMemberships?: Prisma.OrgMemberOrderByRelationAggregateInput
+  userRoles?: Prisma.UserRoleOrderByRelationAggregateInput
   invitesSent?: Prisma.InviteOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
   orgsCreated?: Prisma.OrgOrderByRelationAggregateInput
@@ -300,6 +302,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   orgMemberships?: Prisma.OrgMemberListRelationFilter
+  userRoles?: Prisma.UserRoleListRelationFilter
   invitesSent?: Prisma.InviteListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
   orgsCreated?: Prisma.OrgListRelationFilter
@@ -361,6 +364,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteCreateNestedManyWithoutInvitedByInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   orgsCreated?: Prisma.OrgCreateNestedManyWithoutCreatedByInput
@@ -382,6 +386,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteUncheckedCreateNestedManyWithoutInvitedByInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   orgsCreated?: Prisma.OrgUncheckedCreateNestedManyWithoutCreatedByInput
@@ -403,6 +408,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUpdateManyWithoutInvitedByNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   orgsCreated?: Prisma.OrgUpdateManyWithoutCreatedByNestedInput
@@ -424,6 +430,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUncheckedUpdateManyWithoutInvitedByNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   orgsCreated?: Prisma.OrgUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -584,6 +591,20 @@ export type UserUpdateOneRequiredWithoutOrgMembershipsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutOrgMembershipsInput, Prisma.UserUpdateWithoutOrgMembershipsInput>, Prisma.UserUncheckedUpdateWithoutOrgMembershipsInput>
 }
 
+export type UserCreateNestedOneWithoutUserRolesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUserRolesInput, Prisma.UserUncheckedCreateWithoutUserRolesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserRolesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutUserRolesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUserRolesInput, Prisma.UserUncheckedCreateWithoutUserRolesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserRolesInput
+  upsert?: Prisma.UserUpsertWithoutUserRolesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUserRolesInput, Prisma.UserUpdateWithoutUserRolesInput>, Prisma.UserUncheckedUpdateWithoutUserRolesInput>
+}
+
 export type UserCreateNestedOneWithoutInvitesSentInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutInvitesSentInput, Prisma.UserUncheckedCreateWithoutInvitesSentInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvitesSentInput
@@ -628,6 +649,7 @@ export type UserCreateWithoutOrgsCreatedInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteCreateNestedManyWithoutInvitedByInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
 }
@@ -648,6 +670,7 @@ export type UserUncheckedCreateWithoutOrgsCreatedInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteUncheckedCreateNestedManyWithoutInvitedByInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
 }
@@ -684,6 +707,7 @@ export type UserUpdateWithoutOrgsCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUpdateManyWithoutInvitedByNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
 }
@@ -704,6 +728,7 @@ export type UserUncheckedUpdateWithoutOrgsCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUncheckedUpdateManyWithoutInvitedByNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
 }
@@ -723,6 +748,7 @@ export type UserCreateWithoutOrgMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteCreateNestedManyWithoutInvitedByInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   orgsCreated?: Prisma.OrgCreateNestedManyWithoutCreatedByInput
@@ -743,6 +769,7 @@ export type UserUncheckedCreateWithoutOrgMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteUncheckedCreateNestedManyWithoutInvitedByInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   orgsCreated?: Prisma.OrgUncheckedCreateNestedManyWithoutCreatedByInput
@@ -779,6 +806,7 @@ export type UserUpdateWithoutOrgMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUpdateManyWithoutInvitedByNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   orgsCreated?: Prisma.OrgUpdateManyWithoutCreatedByNestedInput
@@ -799,6 +827,107 @@ export type UserUncheckedUpdateWithoutOrgMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  invitesSent?: Prisma.InviteUncheckedUpdateManyWithoutInvitedByNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  orgsCreated?: Prisma.OrgUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutUserRolesInput = {
+  id?: string
+  email: string
+  password: string
+  name: string
+  avatar?: string | null
+  isVerified?: boolean
+  verifyToken?: string | null
+  verifyTokenExp?: Date | string | null
+  resetToken?: string | null
+  resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput
+  invitesSent?: Prisma.InviteCreateNestedManyWithoutInvitedByInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  orgsCreated?: Prisma.OrgCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutUserRolesInput = {
+  id?: string
+  email: string
+  password: string
+  name: string
+  avatar?: string | null
+  isVerified?: boolean
+  verifyToken?: string | null
+  verifyTokenExp?: Date | string | null
+  resetToken?: string | null
+  resetTokenExp?: Date | string | null
+  lastLogin?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput
+  invitesSent?: Prisma.InviteUncheckedCreateNestedManyWithoutInvitedByInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  orgsCreated?: Prisma.OrgUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutUserRolesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutUserRolesInput, Prisma.UserUncheckedCreateWithoutUserRolesInput>
+}
+
+export type UserUpsertWithoutUserRolesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutUserRolesInput, Prisma.UserUncheckedUpdateWithoutUserRolesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutUserRolesInput, Prisma.UserUncheckedCreateWithoutUserRolesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutUserRolesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutUserRolesInput, Prisma.UserUncheckedUpdateWithoutUserRolesInput>
+}
+
+export type UserUpdateWithoutUserRolesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput
+  invitesSent?: Prisma.InviteUpdateManyWithoutInvitedByNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  orgsCreated?: Prisma.OrgUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutUserRolesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifyToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifyTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetTokenExp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLogin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUncheckedUpdateManyWithoutInvitedByNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   orgsCreated?: Prisma.OrgUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -820,6 +949,7 @@ export type UserCreateWithoutInvitesSentInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   orgsCreated?: Prisma.OrgCreateNestedManyWithoutCreatedByInput
 }
@@ -840,6 +970,7 @@ export type UserUncheckedCreateWithoutInvitesSentInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   orgsCreated?: Prisma.OrgUncheckedCreateNestedManyWithoutCreatedByInput
 }
@@ -876,6 +1007,7 @@ export type UserUpdateWithoutInvitesSentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   orgsCreated?: Prisma.OrgUpdateManyWithoutCreatedByNestedInput
 }
@@ -896,6 +1028,7 @@ export type UserUncheckedUpdateWithoutInvitesSentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   orgsCreated?: Prisma.OrgUncheckedUpdateManyWithoutCreatedByNestedInput
 }
@@ -916,6 +1049,7 @@ export type UserCreateWithoutAuditLogsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteCreateNestedManyWithoutInvitedByInput
   orgsCreated?: Prisma.OrgCreateNestedManyWithoutCreatedByInput
 }
@@ -936,6 +1070,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   updatedAt?: Date | string
   deletedAt?: Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput
+  userRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   invitesSent?: Prisma.InviteUncheckedCreateNestedManyWithoutInvitedByInput
   orgsCreated?: Prisma.OrgUncheckedCreateNestedManyWithoutCreatedByInput
 }
@@ -972,6 +1107,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUpdateManyWithoutInvitedByNestedInput
   orgsCreated?: Prisma.OrgUpdateManyWithoutCreatedByNestedInput
 }
@@ -992,6 +1128,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput
+  userRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   invitesSent?: Prisma.InviteUncheckedUpdateManyWithoutInvitedByNestedInput
   orgsCreated?: Prisma.OrgUncheckedUpdateManyWithoutCreatedByNestedInput
 }
@@ -1003,6 +1140,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
 
 export type UserCountOutputType = {
   orgMemberships: number
+  userRoles: number
   invitesSent: number
   auditLogs: number
   orgsCreated: number
@@ -1010,6 +1148,7 @@ export type UserCountOutputType = {
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orgMemberships?: boolean | UserCountOutputTypeCountOrgMembershipsArgs
+  userRoles?: boolean | UserCountOutputTypeCountUserRolesArgs
   invitesSent?: boolean | UserCountOutputTypeCountInvitesSentArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
   orgsCreated?: boolean | UserCountOutputTypeCountOrgsCreatedArgs
@@ -1030,6 +1169,13 @@ export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  */
 export type UserCountOutputTypeCountOrgMembershipsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.OrgMemberWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUserRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserRoleWhereInput
 }
 
 /**
@@ -1070,6 +1216,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   deletedAt?: boolean
   orgMemberships?: boolean | Prisma.User$orgMembershipsArgs<ExtArgs>
+  userRoles?: boolean | Prisma.User$userRolesArgs<ExtArgs>
   invitesSent?: boolean | Prisma.User$invitesSentArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   orgsCreated?: boolean | Prisma.User$orgsCreatedArgs<ExtArgs>
@@ -1130,6 +1277,7 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "name" | "avatar" | "isVerified" | "verifyToken" | "verifyTokenExp" | "resetToken" | "resetTokenExp" | "lastLogin" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orgMemberships?: boolean | Prisma.User$orgMembershipsArgs<ExtArgs>
+  userRoles?: boolean | Prisma.User$userRolesArgs<ExtArgs>
   invitesSent?: boolean | Prisma.User$invitesSentArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   orgsCreated?: boolean | Prisma.User$orgsCreatedArgs<ExtArgs>
@@ -1142,6 +1290,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     orgMemberships: Prisma.$OrgMemberPayload<ExtArgs>[]
+    userRoles: Prisma.$UserRolePayload<ExtArgs>[]
     invitesSent: Prisma.$InvitePayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
     orgsCreated: Prisma.$OrgPayload<ExtArgs>[]
@@ -1556,6 +1705,7 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   orgMemberships<T extends Prisma.User$orgMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$orgMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrgMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  userRoles<T extends Prisma.User$userRolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userRolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invitesSent<T extends Prisma.User$invitesSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitesSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvitePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orgsCreated<T extends Prisma.User$orgsCreatedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$orgsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrgPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2016,6 +2166,30 @@ export type User$orgMembershipsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.OrgMemberScalarFieldEnum | Prisma.OrgMemberScalarFieldEnum[]
+}
+
+/**
+ * User.userRoles
+ */
+export type User$userRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserRole
+   */
+  select?: Prisma.UserRoleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserRole
+   */
+  omit?: Prisma.UserRoleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserRoleInclude<ExtArgs> | null
+  where?: Prisma.UserRoleWhereInput
+  orderBy?: Prisma.UserRoleOrderByWithRelationInput | Prisma.UserRoleOrderByWithRelationInput[]
+  cursor?: Prisma.UserRoleWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserRoleScalarFieldEnum | Prisma.UserRoleScalarFieldEnum[]
 }
 
 /**

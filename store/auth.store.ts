@@ -20,7 +20,12 @@ type AuthState = {
     plan:              OrgPlanSummary | null;
     orgs:              OrgSummary[];
     permissions:       Permission[];
-    role:              UserRole | null;
+    /**
+     * All roles the user holds in the current org.
+     * Populated after GET /api/auth/permissions succeeds.
+     * Never persisted — always fetched fresh after org selection.
+     */
+    roles:             UserRole[];
     permissionsLoaded: boolean;
     isAuthenticated:   boolean;
 };
@@ -40,9 +45,9 @@ type AuthActions = {
 
     /**
      * Called after GET /api/auth/permissions succeeds.
-     * Stores permissions and role; marks permissionsLoaded = true.
+     * Stores permissions and roles; marks permissionsLoaded = true.
      */
-    setPermissions: (permissions: Permission[], role: UserRole) => void;
+    setPermissions: (permissions: Permission[], roles: UserRole[]) => void;
 
     /**
      * Stores org list — used when refreshing orgs list separately.
@@ -50,7 +55,7 @@ type AuthActions = {
     setOrgs: (orgs: OrgSummary[]) => void;
 
     /**
-     * Clears org-scoped session: org, plan, permissions, role, permissionsLoaded.
+     * Clears org-scoped session: org, plan, permissions, roles, permissionsLoaded.
      * Also clears plan features store so stale plan state is never shown.
      * Called before switching orgs.
      */
@@ -89,7 +94,7 @@ const initialState: AuthState = {
     plan:              null,
     orgs:              [],
     permissions:       [],
-    role:              null,
+    roles:             [],
     permissionsLoaded: false,
     isAuthenticated:   false,
 };
@@ -102,8 +107,8 @@ const initialState: AuthState = {
  * Zustand auth store
  *
  * Persisted fields: user, org, plan, orgs, isAuthenticated
- * NOT persisted: permissions, role, permissionsLoaded
- * (permissions are always fetched fresh after org selection)
+ * NOT persisted: permissions, roles, permissionsLoaded
+ * (permissions/roles are always fetched fresh after org selection)
  *
  * @example
  * const { user, org, isAuthenticated } = useAuthStore()
@@ -123,7 +128,7 @@ export const useAuthStore = create<AuthStore>()(
                             org:               null,
                             plan:              null,
                             permissions:       [],
-                            role:              null,
+                            roles:             [],
                             permissionsLoaded: false,
                             isAuthenticated:   true,
                         },
@@ -137,16 +142,16 @@ export const useAuthStore = create<AuthStore>()(
                             org,
                             plan,
                             permissions:       [],
-                            role:              null,
+                            roles:             [],
                             permissionsLoaded: false,
                         },
                         false,
                         "auth/setOrgSession"
                     ),
 
-                setPermissions: (permissions, role) =>
+                setPermissions: (permissions, roles) =>
                     set(
-                        { permissions, role, permissionsLoaded: true },
+                        { permissions, roles, permissionsLoaded: true },
                         false,
                         "auth/setPermissions"
                     ),
@@ -198,16 +203,22 @@ export const useAuthStore = create<AuthStore>()(
             }),
             {
                 name:    "auth-storage",
-                version: 1,
+                version: 2,
                 /**
                  * v0 → v1: plan field changed from PlanConfig (rich) to OrgPlanSummary (lightweight).
-                 * Old localStorage may contain PlanConfig shape — wipe plan to avoid type mismatch.
+                 * v1 → v2: role: UserRole | null → roles: UserRole[].
                  */
                 migrate: (persistedState, version) => {
                     const s = (persistedState ?? {}) as Record<string, unknown>;
                     if (version === 0) {
-                        // plan shape changed from PlanConfig → OrgPlanSummary; reset to null
                         s.plan = null;
+                    }
+                    if (version <= 1) {
+                        // role (single) → roles (array); clear both to force fresh fetch
+                        delete s.role;
+                        s.roles = [];
+                        s.permissions = [];
+                        s.permissionsLoaded = false;
                     }
                     return s as unknown as AuthState;
                 },
@@ -218,10 +229,22 @@ export const useAuthStore = create<AuthStore>()(
                     plan:            state.plan,
                     orgs:            state.orgs,
                     isAuthenticated: state.isAuthenticated,
-                    // permissions, role, permissionsLoaded are NEVER persisted
+                    // permissions, roles, permissionsLoaded are NEVER persisted
                 }),
             }
         ),
         { name: "AuthStore" }
     )
 );
+
+// ============================================
+// GRANULAR SELECTORS
+// ============================================
+
+/** All roles the user holds in the current org. */
+export const useUserRoles = () =>
+    useAuthStore((s) => s.roles);
+
+/** True if the user holds the given role in the current org. */
+export const useIsPrimaryRole = (role: UserRole) =>
+    useAuthStore((s) => s.roles.includes(role));

@@ -11,7 +11,6 @@ import { useAuthStore } from "@/store/auth.store";
 import type { LoginInput, SignupInput } from "@/lib/validations/auth.schema";
 import type { SessionUser } from "@/types/auth.types";
 import type { OrgContext } from "@/types/org.types";
-import type { Permission, UserRole } from "@/types/permission.types";
 
 /**
  * Logs the user in and stores user + orgs list in Zustand.
@@ -49,12 +48,9 @@ export async function selectOrgService(orgId: string): Promise<{ slug: string }>
  */
 export async function loadPermissionsService(): Promise<void> {
     const response = await authApi.getPermissions();
-    const { permissions, role } = response.data;
+    const { permissions, roles } = response.data;
 
-    useAuthStore.getState().setPermissions(
-        permissions as Permission[],
-        role as UserRole
-    );
+    useAuthStore.getState().setPermissions(permissions, roles);
 }
 
 /**

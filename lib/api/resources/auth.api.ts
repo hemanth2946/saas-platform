@@ -32,7 +32,7 @@ export type SelectOrgResponseData = {
 
 export type PermissionsResponseData = {
     permissions: Permission[];
-    role: UserRole;
+    roles: UserRole[];
 };
 
 // ============================================

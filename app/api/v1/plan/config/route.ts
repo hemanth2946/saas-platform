@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { verifyAccessToken } from "@/server/auth/jwt";
-import { AUTH_CONSTANTS } from "@/config/auth.constants";
+import { getOrgContext } from "@/lib/api/get-org-context";
 import { STATIC_PLAN_CONFIG } from "@/config/planConfig";
 import { logger } from "@/lib/api/core/logger";
 import type { PlanName, PlanConfig } from "@/types";
@@ -59,29 +58,20 @@ const planLimitsWrapperSchema = z.object({
     access:       planAccessSchema,
 });
 
-// ── Route params ──────────────────────────────────────────────────────────────
-
-type RouteParams = { params: Promise<{ orgId: string }> };
-
 /**
- * GET /api/v1/plan/:orgId/config
+ * GET /api/v1/plan/config
  *
  * Returns the full plan configuration for the authenticated org.
- * Reads from the DB subscription → plan record.
+ * orgId is read from x-org-id header (injected by Axios interceptor).
  * Falls back to STATIC_PLAN_CONFIG if DB fails or data is malformed.
  *
  * @returns 200 { success: true, data: PlanConfig }
- * @returns 401 if not authenticated or JWT is invalid
- * @returns 403 if orgId in URL does not match orgId in JWT
+ * @returns 401 if not authenticated or no org context
  * @returns 500 (never — DB failures return static fallback instead)
  */
-export async function GET(req: NextRequest, { params }: RouteParams) {
-    // 1. Parse URL param
-    const { orgId: urlOrgId } = await params;
-
-    // 2. Verify access token
-    const accessTokenCookie = req.cookies.get(AUTH_CONSTANTS.COOKIES.ACCESS_TOKEN);
-    if (!accessTokenCookie?.value) {
+export async function GET(req: NextRequest) {
+    const ctx = await getOrgContext(req);
+    if (!ctx) {
         return NextResponse.json(
             {
                 success: false,
@@ -93,53 +83,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         );
     }
 
-    let jwtPayload;
-    try {
-        jwtPayload = verifyAccessToken(accessTokenCookie.value);
-    } catch {
-        return NextResponse.json(
-            {
-                success: false,
-                message: "Invalid or expired session",
-                data:    null,
-                error:   { code: "UNAUTHORIZED" },
-            },
-            { status: 401 }
-        );
-    }
+    const { orgId } = ctx;
 
-    const { orgId: jwtOrgId } = jwtPayload;
-
-    // Must be org-scoped
-    if (!jwtOrgId) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: "No organisation selected",
-                data:    null,
-                error:   { code: "UNAUTHORIZED" },
-            },
-            { status: 401 }
-        );
-    }
-
-    // 3. Validate URL orgId matches JWT orgId (prevents cross-org data access)
-    if (urlOrgId !== jwtOrgId) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: "Organisation mismatch",
-                data:    null,
-                error:   { code: "FORBIDDEN" },
-            },
-            { status: 403 }
-        );
-    }
-
-    // 4. Query subscription + plan from DB
+    // Query subscription + plan from DB
     try {
         const subscription = await prisma.subscription.findUnique({
-            where:   { orgId: jwtOrgId },
+            where:   { orgId },
             include: { plan: true },
         });
 
@@ -156,7 +105,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             );
         }
 
-        // 5. Validate Plan.name is a recognized PlanName
+        // Validate Plan.name is a recognized PlanName
         const validPlanNames: PlanName[] = ["free", "pro", "growth"];
         const planName = (
             validPlanNames.includes(rawPlan.name as PlanName)
@@ -164,29 +113,28 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
                 : "free"
         ) as PlanName;
 
-        // 6. Parse and validate Plan.features JSON
+        // Parse and validate Plan.features JSON
         const featuresResult = planFeaturesSchema.safeParse(rawPlan.features);
         if (!featuresResult.success) {
             logger.warn("[PLAN CONFIG] features JSON validation failed — using static fallback", {
-                orgId:  jwtOrgId,
+                orgId,
                 planId: rawPlan.id,
                 errors: featuresResult.error.issues,
             });
             return buildStaticFallbackResponse(planName);
         }
 
-        // 7. Parse and validate Plan.limits JSON
+        // Parse and validate Plan.limits JSON
         const limitsResult = planLimitsWrapperSchema.safeParse(rawPlan.limits);
         if (!limitsResult.success) {
             logger.warn("[PLAN CONFIG] limits JSON validation failed — using static fallback", {
-                orgId:  jwtOrgId,
+                orgId,
                 planId: rawPlan.id,
                 errors: limitsResult.error.issues,
             });
             return buildStaticFallbackResponse(planName);
         }
 
-        // 8. Build and return PlanConfig
         const planConfig: PlanConfig = {
             id:           rawPlan.id,
             name:         planName,
@@ -208,9 +156,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         );
 
     } catch (error) {
-        // DB failure — return static fallback instead of 500 so the UI never breaks
         logger.error("[PLAN CONFIG] DB query failed — returning static fallback", {
-            orgId: jwtOrgId,
+            orgId,
             error,
         });
 

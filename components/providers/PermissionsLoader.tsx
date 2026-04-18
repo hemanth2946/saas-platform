@@ -6,7 +6,6 @@ import { useAuthStore } from "@/store/auth.store";
 import { authApi } from "@/lib/api/resources/auth.api";
 import { authKeys } from "@/lib/query/keys/auth.keys";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Permission, UserRole } from "@/types";
 
 // ============================================
 // LOADING SKELETON
@@ -131,11 +130,8 @@ export function PermissionsLoader({ orgId, children }: PermissionsLoaderProps) {
 
     // Sync fetched data into Zustand store
     useEffect(() => {
-        if (data && !permissionsLoaded) {
-            setPermissions(
-                data.permissions as Permission[],
-                data.role as UserRole
-            );
+        if (data != null && !permissionsLoaded) {
+            setPermissions(data.permissions, data.roles);
         }
     }, [data, permissionsLoaded, setPermissions]);
 

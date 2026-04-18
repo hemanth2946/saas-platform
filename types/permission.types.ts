@@ -24,7 +24,10 @@ export type Permission =
     | "settings.edit"
     | "settings.manage"
     // Audit log
-    | "audit.view";
+    | "audit.view"
+    // Scanning
+    | "scan.view"
+    | "scan.create";
 
 // Role-to-permissions map (reference only — enforced on backend)
 // super_admin → all permissions
