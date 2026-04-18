@@ -1,3 +1,4 @@
+export { ComingSoon } from "./ComingSoon"
 export { Stack }     from "./Stack"
 export { Grid }      from "./Grid"
 export { Container } from "./Container"
