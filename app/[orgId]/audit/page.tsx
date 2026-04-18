@@ -1,4 +1,3 @@
-import { ClipboardList } from "lucide-react";
 import { ComingSoon } from "@/components/primitives/ComingSoon";
 
 export default function AuditLogPage() {
@@ -6,7 +5,7 @@ export default function AuditLogPage() {
         <ComingSoon
             title="Audit Log"
             description="Track all activity across your organisation — user actions, role changes, and system events. Coming soon."
-            icon={ClipboardList}
+            icon="clipboard-list"
         />
     );
 }

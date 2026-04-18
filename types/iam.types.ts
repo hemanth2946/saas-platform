@@ -9,95 +9,95 @@ import type { Permission } from "./permission.types";
 // ── UserRole join record (DB shape) ──────────────────────────────────────────
 
 export interface UserRoleRecord {
-    userId:    string;
-    roleId:    string;
+    userId: string;
+    roleId: string;
     createdAt: string;
 }
 
 // ── Full role shape from API ──────────────────────────────────────────────────
 
 export interface RoleRecord {
-    id:          string;
-    name:        string;
-    type:        "QUICK" | "SERVICE_BASED";
-    serviceKey:  string | null;
+    id: string;
+    name: string;
+    type: "QUICK" | "SERVICE_BASED";
+    serviceKey: string | null;
     description: string | null;
-    orgId:       string;
+    orgId: string;
     permissions: Permission[];
 }
 
 // ── Service group for role selector UI ───────────────────────────────────────
 
 export interface ServiceRoleGroup {
-    serviceKey:  string;
+    serviceKey: string;
     serviceName: string;
     description: string;
-    roles:       RoleRecord[];
+    roles: RoleRecord[];
 }
 
 // ── IAM user (what the users list returns) ───────────────────────────────────
 
 export interface IAMUser {
-    id:                  string;
-    name:                string | null;
-    email:               string;
-    avatar:              string | null;
-    status:              UserStatus;
-    lastLogin:           string | null;
-    invitedAt:           string | null;
-    invitationAccepted:  boolean;
-    roles:               RoleRecord[];
-    roleCount:           number;
+    id: string;
+    name: string | null;
+    email: string;
+    avatar: string | null;
+    status: UserStatus;
+    lastLogin: string | null;
+    invitedAt: string | null;
+    invitationAccepted: boolean;
+    roles: RoleRecord[];
+    roleCount: number;
 }
 
 // ── Invite record ─────────────────────────────────────────────────────────────
 
 export interface InviteRecord {
-    id:         string;
-    email:      string;
-    roleIds:    string[];
-    token:      string;
-    expiresAt:  string;
+    id: string;
+    email: string;
+    roleIds: string[];
+    token: string;
+    expiresAt: string;
     acceptedAt: string | null;
-    orgId:      string;
+    orgId: string;
 }
 
 // ── Invite validation (public GET /api/v1/invite/[token]) ────────────────────
 
 export interface InviteValidationResponse {
-    email:     string;
-    orgName:   string;
-    orgLogo:   string | null;
+    email: string;
+    orgName: string;
+    orgLogo: string | null;
     expiresAt: string;
 }
 
 // ── API request/response types ───────────────────────────────────────────────
 
 export interface GetUsersResponse {
-    users:      IAMUser[];
-    total:      number;
-    seatUsed:   number;
-    seatLimit:  number | null;
+    users: IAMUser[];
+    total: number;
+    seatUsed: number;
+    seatLimit: number | null;
 }
 
 export interface GetRolesResponse {
-    quickRoles:   RoleRecord[];
+    quickRoles: RoleRecord[];
     serviceBased: ServiceRoleGroup[];
 }
 
 export interface InviteUserRequest {
-    email:   string;
+    email: string;
     roleIds: string[];
 }
 
 export interface UpdateUserRequest {
     roleIds?: string[];
-    status?:  "ACTIVE" | "SUSPENDED";
+    status?: "ACTIVE" | "SUSPENDED";
 }
 
 export interface AcceptInviteRequest {
     password: string;
-    name:     string;
+    name: string;
 }
 
 // ── User status ───────────────────────────────────────────────────────────────

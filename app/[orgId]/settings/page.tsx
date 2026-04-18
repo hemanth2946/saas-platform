@@ -1,4 +1,3 @@
-import { Settings } from "lucide-react";
 import { ComingSoon } from "@/components/primitives/ComingSoon";
 
 export default function SettingsPage() {
@@ -6,7 +5,7 @@ export default function SettingsPage() {
         <ComingSoon
             title="Settings"
             description="Configure your organisation's preferences, integrations, and security settings. Coming soon."
-            icon={Settings}
+            icon="settings"
         />
     );
 }
