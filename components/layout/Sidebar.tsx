@@ -136,7 +136,7 @@ function SidebarContent({
                           <span className={cn(typography.nav.item, "flex-1")}>
                             {item.label}
                           </span>
-                          <PlanTag plan={item.requiredPlan!} />
+                          <PlanTag variant={item.requiredPlan as "pro" | "growth"} />
                         </>
                       )}
                     </div>

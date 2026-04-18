@@ -2,7 +2,8 @@
  * lib/api/resources/users.api.ts
  *
  * Raw HTTP functions for the users domain.
- * Business logic lives in lib/services/users.service.ts.
+ * NOTE: Superseded by lib/api/iam.service.ts for Phase 2D+.
+ * orgId is accepted but not used in the URL — it travels via x-org-id header.
  */
 
 import { internalClient } from "@/lib/api/clients/internal.client";
@@ -12,63 +13,33 @@ import type { SessionUser } from "@/types/auth.types";
 import type { UserRole } from "@/types/permission.types";
 
 export const usersApi = {
-    /**
-     * Lists all users in the given org.
-     */
-    getUsers(orgId: string): Promise<ApiResponse<SessionUser[]>> {
+    getUsers(_orgId: string): Promise<ApiResponse<SessionUser[]>> {
         return internalClient
-            .get<ApiResponse<SessionUser[]>>(ENDPOINTS.USERS.list(orgId))
+            .get<ApiResponse<SessionUser[]>>(ENDPOINTS.IAM.users)
             .then((r) => r.data);
     },
 
-    /**
-     * Sends an invitation email to a new user.
-     */
-    inviteUser(
-        orgId: string,
-        data: { email: string; role: UserRole }
-    ): Promise<ApiResponse<null>> {
+    inviteUser(_orgId: string, data: { email: string; role: UserRole }): Promise<ApiResponse<null>> {
         return internalClient
-            .post<ApiResponse<null>>(ENDPOINTS.USERS.invite(orgId), data)
+            .post<ApiResponse<null>>(ENDPOINTS.IAM.invite, data)
             .then((r) => r.data);
     },
 
-    /**
-     * Removes a user from the org.
-     */
-    removeUser(orgId: string, userId: string): Promise<ApiResponse<null>> {
+    removeUser(_orgId: string, userId: string): Promise<ApiResponse<null>> {
         return internalClient
-            .delete<ApiResponse<null>>(ENDPOINTS.USERS.remove(orgId, userId))
+            .delete<ApiResponse<null>>(ENDPOINTS.IAM.user(userId))
             .then((r) => r.data);
     },
 
-    /**
-     * Updates a user's role within the org.
-     */
-    updateUserRole(
-        orgId: string,
-        userId: string,
-        role: UserRole
-    ): Promise<ApiResponse<SessionUser>> {
+    updateUserRole(_orgId: string, userId: string, role: UserRole): Promise<ApiResponse<SessionUser>> {
         return internalClient
-            .patch<ApiResponse<SessionUser>>(
-                ENDPOINTS.USERS.updateRole(orgId, userId),
-                { role }
-            )
+            .patch<ApiResponse<SessionUser>>(ENDPOINTS.IAM.user(userId), { roleIds: [role] })
             .then((r) => r.data);
     },
 
-    /**
-     * Suspends a user's access to the org.
-     */
-    suspendUser(
-        orgId: string,
-        userId: string
-    ): Promise<ApiResponse<SessionUser>> {
+    suspendUser(_orgId: string, userId: string): Promise<ApiResponse<SessionUser>> {
         return internalClient
-            .post<ApiResponse<SessionUser>>(
-                ENDPOINTS.USERS.suspend(orgId, userId)
-            )
+            .post<ApiResponse<SessionUser>>(`${ENDPOINTS.IAM.user(userId)}/suspend`)
             .then((r) => r.data);
     },
 };

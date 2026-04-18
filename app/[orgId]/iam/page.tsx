@@ -55,7 +55,7 @@ function CreateIAMUserButton({ onOpen }: { onOpen: () => void }) {
                     variant="default"
                     size="default"
                     onClick={onOpen}
-                    disabled={isAtLimit || planGate.isBlocked}
+                    disabled={isAtLimit || !planGate.allowed}
                     aria-label="Create IAM user"
                 >
                     Create IAM User

@@ -21,7 +21,7 @@ export const planApi = {
      */
     getPlanConfig(orgId: string): Promise<ApiResponse<PlanConfig>> {
         return internalClient
-            .get<ApiResponse<PlanConfig>>(ENDPOINTS.PLAN.config(orgId))
+            .get<ApiResponse<PlanConfig>>(ENDPOINTS.PLAN.config)
             .then((r) => r.data);
     },
 

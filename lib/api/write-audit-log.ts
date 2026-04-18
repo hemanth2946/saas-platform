@@ -38,7 +38,7 @@ export async function writeAuditLog(params: AuditLogParams): Promise<void> {
                 action:     params.action,
                 resource:   params.resource,
                 resourceId: params.resourceId,
-                metadata:   params.metadata ?? {},
+                metadata:   (params.metadata ?? {}) as object,
             },
         });
     } catch (error) {
